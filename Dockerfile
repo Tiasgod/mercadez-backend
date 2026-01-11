@@ -1,23 +1,23 @@
-# Use Java 21 + Maven
+# Etapa de build: Maven + Java 21
 FROM maven:3.9.0-eclipse-temurin-21 AS build
 
-# Define diretório de trabalho
+# Diretório de trabalho dentro da imagem
 WORKDIR /app
 
-# Copia os arquivos do projeto
+# Copia pom.xml e código-fonte
 COPY pom.xml .
 COPY src ./src
 
-# Build do projeto
+# Build do projeto (ignora testes para agilizar)
 RUN mvn clean package -DskipTests
 
-# Imagem final apenas com Java para rodar o jar
+# Etapa final: apenas Java runtime para rodar o jar
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Copia o jar gerado na imagem de build
+# Copia o jar gerado da etapa de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Comando para rodar a aplicação
+# Comando para iniciar a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]
