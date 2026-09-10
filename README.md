@@ -90,25 +90,6 @@ Para o lojista, a solução funciona como uma ferramenta de presença digital e 
 
 ---
 
-## Precinho — o mascote do Mercadez
-
-O **Precinho** é o mascote oficial do Mercadez e representa a identidade da plataforma.
-
-Criado para tornar a experiência mais **amigável, próxima e fácil de compreender**, o Precinho acompanha a identidade visual do projeto e ajuda a humanizar a interação do usuário com a plataforma.
-
-Além de representar visualmente o Mercadez, o mascote pode ser utilizado na comunicação com os usuários, apresentando informações, orientando durante a navegação e destacando funcionalidades da plataforma.
-
-<p align="center">
-  <img src="./images/icons/precinho_sem_fundo.png" alt="Precinho — Mascote do Mercadez" width="350">
-</p>
-
-<p align="center">
-  <strong>Precinho</strong><br>
-  Mascote oficial do Mercadez
-</p>
-
----
-
 ## Objetivos
 
 O Mercadez busca atender dois públicos principais.
