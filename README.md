@@ -1,208 +1,460 @@
-# Mercadez Backend (Python)
+# Mercadez — Mercado Nota Dez!
 
-API REST do projeto **Mercadez** — plataforma de comparação de preços entre mercados.
-Migrado de **Spring Boot (Java)** para **FastAPI (Python)**, mantendo compatibilidade
-total com o frontend existente.
+<p align="center">
+  <strong>Uma solução digital para comparação de preços e fortalecimento do comércio local.</strong>
+</p>
 
-## Sobre esta migração
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/Backend-Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/API-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+</p>
 
-Este backend substitui o backend Java original (`mercadez-backend-main`), mantendo:
+<p align="center">
+  Projeto acadêmico desenvolvido na <strong>FATEC Ferraz de Vasconcelos</strong>.
+</p>
 
-- As mesmas rotas, métodos HTTP e formatos de request/response (incluindo o campo
-  `nome_proprietario` em snake_case no recurso de afiliados, preservado por
-  compatibilidade com o frontend).
-- O mesmo formato de erro (`{status, erro, mensagem, timestamp}`).
-- Os mesmos status HTTP (200, 201, 204, 400, 401, 404, 500).
+---
 
-E corrige/adiciona em relação ao original:
+### Quem somos
 
-- **Autorização de fato imposta.** No backend Java, `SecurityConfig` liberava
-  `anyRequest().permitAll()` e a lista de rotas protegidas do `JwtAuthFilter` nunca
-  era usada — a "proteção" das rotas de afiliado dependia só do controller extrair
-  o ID do token, o que gerava `NullPointerException` (HTTP 500) em vez de 401 quando
-  não havia token. Aqui, as dependências (`app/deps.py`) bloqueiam explicitamente
-  com 401 (sem token/token inválido) e 403 (perfil errado).
-- **`/listas` implementado de verdade.** O frontend (`listas.html`) já chamava
-  `GET /listas` e `DELETE /listas/{id}`, mas o endpoint nunca existiu no backend
-  Java — a página falhava silenciosamente. Agora existe (`GET`, `POST`, `DELETE`),
-  representando a lista de compras pessoal de cada usuário.
-- **Migrations versionadas com Alembic**, em vez de `ddl-auto=update` (Hibernate
-  criando/alterando o schema automaticamente, sem histórico).
+<div align="center">
+<table>
+<tr>
+<td align="center" width="33%">
+<a href="https://github.com/Tiasgod">
+<img src="https://avatars.githubusercontent.com/Tiasgod" width="100px" style="border-radius:50%;border:3px solid #6B21D0;" alt="Tiago Dias"/>
+<br/>
+<sub><b>Tiago Dias</b></sub>
+</a>
+<br/>
+<sub>Back-End - Engenheiro de IA</sub>
+<br/><br/>
+<a href="https://github.com/Tiasgod"><img src="https://img.shields.io/badge/GitHub-000000?style=flat-square&logo=github&logoColor=FFD84C"/></a>
+&nbsp;
+<a href="https://www.linkedin.com/in/tiagopdias-02-2004-ti/"><img src="https://img.shields.io/badge/LinkedIn-6B21D0?style=flat-square&logo=linkedin&logoColor=FFD84C"/></a>
+</td>
+<td align="center" width="33%">
+<a href="https://github.com/leonardobarca">
+<img src="https://avatars.githubusercontent.com/leonardobarca" width="100px" style="border-radius:50%;border:3px solid #6B21D0;" alt="Leonardo Barca"/>
+<br/>
+<sub><b>Leonardo Barca</b></sub>
+</a>
+<br/>
+<sub>Full-Stack</sub>
+<br/><br/>
+<a href="https://github.com/leonardobarca"><img src="https://img.shields.io/badge/GitHub-000000?style=flat-square&logo=github&logoColor=FFD84C"/></a>
+&nbsp;
+<a href="https://www.linkedin.com/in/leonardobarca/"><img src="https://img.shields.io/badge/LinkedIn-6B21D0?style=flat-square&logo=linkedin&logoColor=FFD84C"/></a>
+</td>
+<td align="center" width="33%">
+<a href="https://github.com/GuilhermeMCavalcanti">
+<img src="https://avatars.githubusercontent.com/GuilhermeMCavalcanti" width="100px" style="border-radius:50%;border:3px solid #6B21D0;" alt="Guilherme Cavalcanti"/>
+<br/>
+<sub><b>Guilherme Cavalcanti</b></sub>
+</a>
+<br/>
+<sub>UI/UX Design - Front-End</sub>
+<br/><br/>
+<a href="https://github.com/GuilhermeMCavalcanti"><img src="https://img.shields.io/badge/GitHub-000000?style=flat-square&logo=github&logoColor=FFD84C"/></a>
+&nbsp;
+<a href="https://www.linkedin.com/in/guilhermecavalcanti2005/"><img src="https://img.shields.io/badge/LinkedIn-6B21D0?style=flat-square&logo=linkedin&logoColor=FFD84C"/></a>
+</td>
+</tr>
+</table>
+</div>
 
-## Stack
+## Sobre o projeto
 
-| Camada       | Tecnologia                          |
-|--------------|--------------------------------------|
-| Framework    | FastAPI                              |
-| Banco        | PostgreSQL                           |
-| ORM          | SQLAlchemy 2.0                       |
-| Migrations   | Alembic                              |
-| Auth         | JWT (PyJWT) + bcrypt (passlib)       |
-| Validação    | Pydantic v2                          |
-| Testes       | Pytest + HTTPX (TestClient) + SQLite em memória |
+O **Mercadez — Mercado Nota Dez** é uma plataforma web criada para aproximar **consumidores e pequenos comerciantes**, facilitando a comparação de preços, a divulgação de ofertas e o gerenciamento de produtos.
 
-## Endpoints
+A proposta do Mercadez é oferecer um ambiente onde o consumidor possa encontrar produtos, comparar preços entre diferentes estabelecimentos e identificar melhores oportunidades de compra.
 
-### Usuários
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| POST | `/usuarios/cadastro` | ✗ | Cadastro de cliente |
-| POST | `/usuarios/login` | ✗ | Login → retorna JWT |
-| GET | `/usuarios/me` | ✓ (usuário) | Dados do usuário logado |
+Ao mesmo tempo, a plataforma oferece aos pequenos comerciantes ferramentas para ampliar sua presença digital, organizar seus produtos, controlar preços e estoque e divulgar promoções.
 
-### Afiliados (lojistas)
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| POST | `/afiliados` | ✗ | Cadastro de lojista |
-| POST | `/afiliados/login` | ✗ | Login → retorna JWT |
-| GET | `/afiliados/me` | ✓ (afiliado) | Dados do afiliado logado |
+O projeto foi desenvolvido no contexto acadêmico da **FATEC Ferraz de Vasconcelos**, aplicando conhecimentos de desenvolvimento web, APIs, banco de dados, engenharia de software e experiência do usuário.
 
-### Produtos
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/produtos` (+ `?afiliado=<id>`) | ✗ | Lista produtos ativos |
-| GET | `/produtos/buscar?q=<termo>` | ✗ | Busca por nome ou tag |
-| GET | `/produtos/comparar?nome=<>` | ✗ | Comparação de preços entre afiliados |
-| POST | `/produtos` | ✓ (afiliado) | Cadastra produto |
-| PUT | `/produtos/{id}` | ✓ (afiliado, dono) | Atualiza produto |
-| DELETE | `/produtos/{id}` | ✓ (afiliado, dono) | Remove produto (soft-delete) |
+---
 
-### Listas (NOVO — implementado nesta migração)
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/listas` | ✓ (usuário) | Itens da lista de compras do usuário |
-| POST | `/listas` | ✓ (usuário) | Adiciona um produto à lista |
-| DELETE | `/listas/{id}` | ✓ (usuário) | Remove um item da lista |
+## A proposta
 
-### Contato
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| POST | `/contato` | ✗ | Formulário "Fale Conosco" |
+O Mercadez parte de uma ideia simples:
 
-Documentação interativa (gerada automaticamente pelo FastAPI):
-- Swagger: `/docs`
-- ReDoc: `/redoc`
-- OpenAPI JSON: `/openapi.json`
+> **Facilitar a busca pelo melhor preço enquanto ajuda pequenos comerciantes a terem mais visibilidade.**
 
-## Estrutura do projeto
+Em vez de o consumidor precisar pesquisar individualmente em diferentes estabelecimentos, o Mercadez busca concentrar essas informações em uma única plataforma.
 
+Para o lojista, a solução funciona como uma ferramenta de presença digital e gerenciamento, permitindo cadastrar produtos, atualizar preços, controlar estoque e publicar promoções.
+
+---
+
+## Precinho — o mascote do Mercadez
+
+O **Precinho** é o mascote oficial do Mercadez e representa a identidade da plataforma.
+
+Criado para tornar a experiência mais **amigável, próxima e fácil de compreender**, o Precinho acompanha a identidade visual do projeto e ajuda a humanizar a interação do usuário com a plataforma.
+
+Além de representar visualmente o Mercadez, o mascote pode ser utilizado na comunicação com os usuários, apresentando informações, orientando durante a navegação e destacando funcionalidades da plataforma.
+
+<p align="center">
+  <img src="./images/icons/precinho_sem_fundo.png" alt="Precinho — Mascote do Mercadez" width="350">
+</p>
+
+<p align="center">
+  <strong>Precinho</strong><br>
+  Mascote oficial do Mercadez
+</p>
+
+---
+
+## Objetivos
+
+O Mercadez busca atender dois públicos principais.
+
+### Para consumidores
+
+* Pesquisar produtos;
+* Comparar preços;
+* Encontrar ofertas;
+* Visualizar promoções;
+* Criar listas de compras;
+* Salvar produtos favoritos;
+* Receber notificações de promoções.
+
+### Para comerciantes
+
+* Cadastrar produtos;
+* Gerenciar preços;
+* Administrar o catálogo;
+* Controlar estoque;
+* Publicar promoções;
+* Acompanhar informações por meio de um dashboard;
+* Ampliar a presença digital do estabelecimento.
+
+---
+
+## Funcionalidades
+
+| Funcionalidade           | Cliente | Lojista | Administrador |
+| ------------------------ | :-----: | :-----: | :-----------: |
+| Cadastro e autenticação  |   Sim   |   Sim   |      Sim      |
+| Pesquisa de produtos     |   Sim   |   Sim   |      Sim      |
+| Comparação de preços     |   Sim   |   Sim   |      Sim      |
+| Visualização de ofertas  |   Sim   |   Sim   |      Sim      |
+| Lista de compras         |   Sim   |    -    |       -       |
+| Produtos favoritos       | Premium |    -    |       -       |
+| Notificações             |   Sim   |   Sim   |      Sim      |
+| Cadastro de produtos     |    -    |   Sim   |      Sim      |
+| Gerenciamento de preços  |    -    |   Sim   |      Sim      |
+| Gerenciamento de estoque |    -    |   Sim   |      Sim      |
+| Dashboard                |    -    |   Sim   |      Sim      |
+| Publicação de promoções  |    -    |   Sim   |      Sim      |
+| Controle de usuários     |    -    |    -    |      Sim      |
+| Controle de acessos      |    -    |    -    |      Sim      |
+
+---
+
+## Perfis de usuário
+
+### Cliente
+
+O cliente utiliza o Mercadez para pesquisar produtos, encontrar ofertas e comparar preços entre estabelecimentos.
+
+**Principais ações:**
+
+* Pesquisar produtos;
+* Comparar preços;
+* Visualizar ofertas;
+* Criar listas de compras;
+* Favoritar produtos;
+* Receber notificações.
+
+### Lojista
+
+O lojista utiliza a plataforma para administrar os produtos e informações do seu estabelecimento.
+
+**Principais ações:**
+
+* Cadastrar produtos;
+* Atualizar preços;
+* Gerenciar estoque;
+* Criar promoções;
+* Administrar catálogo;
+* Acompanhar informações pelo dashboard.
+
+### Administrador
+
+O administrador é responsável pela supervisão geral da plataforma.
+
+**Principais ações:**
+
+* Gerenciar usuários;
+* Controlar permissões;
+* Supervisionar estabelecimentos;
+* Administrar informações;
+* Auxiliar na segurança e integridade do sistema.
+
+---
+
+## Arquitetura da aplicação
+
+O Mercadez utiliza uma arquitetura separando o frontend, backend e banco de dados.
+
+```text
+                         MERCADEZ
+                            |
+             +--------------+--------------+
+             |                             |
+             v                             v
+        FRONTEND                        BACKEND
+          React                     Python + FastAPI
+             |                             |
+             |            API              |
+             +------------HTTP-------------+
+                            |
+                            v
+                       PostgreSQL
 ```
-backend/
-├── app/
-│   ├── main.py              # app FastAPI, CORS, exception handlers
-│   ├── deps.py               # get_db, autenticação (extração/validação de JWT)
-│   ├── exceptions.py         # exceções de negócio customizadas
-│   ├── core/
-│   │   ├── config.py         # Settings (variáveis de ambiente)
-│   │   ├── database.py       # engine, SessionLocal, Base
-│   │   └── security.py       # hash de senha (bcrypt) + JWT
-│   ├── models/                # SQLAlchemy (usuario, afiliado, produto, contato, lista)
-│   ├── schemas/                # Pydantic (request/response)
-│   ├── routers/                 # endpoints por recurso
-│   └── services/                 # regra de negócio
-├── alembic/                       # migrations versionadas
-├── tests/                          # Pytest (21 testes, SQLite em memória)
-├── .env.example
-├── requirements.txt
-└── alembic.ini
-```
 
-## Instalação (Windows / PowerShell)
+### Frontend
 
-```powershell
-# Criar ambiente virtual
-python -m venv venv
+O frontend foi desenvolvido utilizando **React**, permitindo a criação de uma interface dinâmica, componentizada e responsiva.
 
-# Ativar (se der erro de política de execução, rode antes:
-# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser)
-.\venv\Scripts\Activate.ps1
+### Backend
 
-# Instalar dependências
-pip install -r requirements.txt
+O backend foi desenvolvido em **Python**, utilizando **FastAPI** para construção da API responsável pela comunicação entre a interface e os dados da aplicação.
 
-# Copiar e preencher as variáveis de ambiente
-copy .env.example .env
+### Banco de dados
 
-# Rodar as migrations
-alembic upgrade head
+O sistema utiliza **PostgreSQL** para armazenamento e gerenciamento das informações.
 
-# Executar o servidor
-uvicorn app.main:app --reload
-```
+---
 
-## Instalação (Linux / macOS)
+## Tecnologias utilizadas
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-alembic upgrade head
-uvicorn app.main:app --reload
-```
+### Frontend
+
+* React
+* JavaScript
+* HTML5
+* CSS3
+
+### Backend
+
+* Python
+* FastAPI
+* APIs REST
+
+### Banco de dados
+
+* PostgreSQL
+
+### Design e prototipação
+
+* Figma
+
+### Ferramentas
+
+* Git
+* GitHub
+* Visual Studio Code
+
+---
 
 ## Banco de dados
 
-1. Crie um banco PostgreSQL local (ou use um serviço gerenciado).
-2. Preencha `DATABASE_URL` no `.env`, no formato:
-   `postgresql+psycopg2://usuario:senha@host:porta/nome_do_banco`
-3. Rode as migrations: `alembic upgrade head`
-4. Para gerar uma nova migration depois de alterar um model:
-   `alembic revision --autogenerate -m "descricao da mudanca"`
-5. Para verificar a conexão, acesse `/docs` — se o Swagger carregar, a app subiu;
-   qualquer chamada que toque o banco (ex: `POST /usuarios/cadastro`) confirma a conexão.
+O PostgreSQL é utilizado para armazenar as principais informações da plataforma.
 
-## Variáveis de ambiente (`.env`)
+Entre os dados trabalhados pelo sistema estão:
 
+* Usuários;
+* Estabelecimentos;
+* Produtos;
+* Preços;
+* Estoque;
+* Ofertas;
+* Promoções;
+* Listas de compras;
+* Produtos favoritos.
+
+A estrutura relacional permite organizar os dados e estabelecer relações entre consumidores, comerciantes, produtos e ofertas.
+
+---
+
+## API
+
+A comunicação entre o frontend e o backend é realizada por meio de uma API desenvolvida com **FastAPI**.
+
+```text
+React
+  |
+  | HTTP / JSON
+  v
+FastAPI
+  |
+  | Consultas e operações
+  v
+PostgreSQL
 ```
-DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/mercadez
-SECRET_KEY=troque-esta-chave-em-producao
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-CORS_ORIGINS=https://mercadez-ten.vercel.app,http://localhost:5500,http://127.0.0.1:5500
+
+Essa separação permite que o frontend e o backend evoluam de forma independente, além de facilitar futuras integrações com outros sistemas e aplicações.
+
+---
+
+## Acessibilidade
+
+O Mercadez também considera princípios de acessibilidade digital durante o desenvolvimento da plataforma.
+
+Entre os recursos planejados e implementados estão:
+
+* HTML semântico;
+* Navegação por teclado;
+* Contraste adequado;
+* Modos de visualização;
+* Alto contraste;
+* Integração com VLibras;
+* Organização visual das informações.
+
+A proposta é tornar a plataforma mais acessível e proporcionar uma experiência adequada para diferentes perfis de usuários.
+
+---
+
+## Diferenciais
+
+O Mercadez busca unir diferentes necessidades em uma única solução:
+
+```text
+                 +--------------------+
+                 |      MERCADEZ      |
+                 +---------+----------+
+                           |
+          +----------------+----------------+
+          |                |                |
+          v                v                v
+    Comparação de     Gestão para      Comércio
+       preços          lojistas          local
+          |                |                |
+          +----------------+----------------+
+                           |
+                           v
+                  Melhor decisão de compra
 ```
 
-`.env` nunca deve ser commitado (já está no `.gitignore`); `.env.example` documenta
-as chaves sem valores reais.
+A plataforma não se limita à comparação de preços.
 
-## Testes
+O objetivo é criar um ecossistema que beneficie tanto quem **compra** quanto quem **vende**, especialmente pequenos estabelecimentos que precisam de ferramentas digitais para competir e alcançar novos consumidores.
 
-```bash
-pytest
+---
+
+## Protótipo
+
+O protótipo das interfaces do Mercadez foi desenvolvido no Figma.
+
+<p align="center">
+  <a href="https://www.figma.com/design/XoU27TT2o5pYYSCi8glYAv/Mercadez?node-id=0-1&t=7cxPAu4NjEaX4ntx-1">
+    <strong>Acessar protótipo no Figma</strong>
+  </a>
+</p>
+
+---
+
+## Hospedagem
+
+A aplicação foi estruturada para funcionamento em ambiente web.
+
+| Camada         | Tecnologia       |
+| -------------- | ---------------- |
+| Frontend       | React            |
+| Backend        | Python + FastAPI |
+| Banco de dados | PostgreSQL       |
+| Prototipação   | Figma            |
+
+A arquitetura permite separar as responsabilidades da aplicação, facilitando manutenção, evolução e escalabilidade.
+
+---
+
+## Roadmap
+
+```text
+[x] Definição da proposta
+[x] Levantamento de requisitos
+[x] Criação do protótipo
+[x] Desenvolvimento do frontend
+[x] Estruturação do banco de dados
+[x] Desenvolvimento da API
+[ ] Integração completa entre frontend e backend
+[ ] Sistema completo de autenticação
+[ ] Dashboard do lojista
+[ ] Sistema de notificações
+[ ] Integração completa de estoque
+[ ] Testes da aplicação
+[ ] Deploy da versão final
 ```
 
-21 testes cobrindo cadastro, login, autenticação, autorização (incluindo os casos
-negativos — token de usuário em rota de afiliado e vice-versa), CRUD de produtos,
-contato e o novo recurso `/listas`.
+---
 
-## Testando manualmente via Swagger
+## Equipe
 
-1. Suba o servidor (`uvicorn app.main:app --reload`) e abra `http://localhost:8000/docs`.
-2. `POST /usuarios/cadastro` — crie um usuário.
-3. `POST /usuarios/login` — copie o `token` retornado.
-4. Clique em **Authorize** no Swagger e cole `Bearer <token>`.
-5. `GET /usuarios/me` — confirme que retorna os dados do usuário.
-6. Repita 2-4 com `POST /afiliados` e `POST /afiliados/login` para testar o fluxo
-   de lojista.
-7. Com o token de afiliado, `POST /produtos` para cadastrar um produto.
-8. Com o token de usuário, `POST /listas` (informando o `produtoId` cadastrado)
-   e depois `GET /listas` para conferir.
+| Desenvolvedor               |
+| --------------------------- |
+| Tiago Pereira Dias          |
+| Leonardo de Souza Barca     |
+| Guilherme Morais Cavalcanti |
 
-## Integração com o frontend
+---
 
-Nenhuma mudança é necessária no frontend (`API_URL` em `js/api.js` continua
-apontando para a mesma URL base) — **exceto** que agora `/listas` responde de
-verdade, então `listas.html` passa a funcionar em vez de mostrar sempre "lista vazia".
+## Orientadores
 
-## Deploy
+| Orientador                          |
+| ----------------------------------- |
+| Dra. Márcia Aparecida Silva Bissaco |
+| Prof. Francisco Douglas Lima Abreu  |
+| Prof. Jeferson Roberto de Lima      |
 
-Pensando em plataformas como Render, Railway ou Fly.io:
+---
 
-- Configure `DATABASE_URL`, `SECRET_KEY` e `CORS_ORIGINS` como variáveis de ambiente
-  da plataforma (nunca no código).
-- Comando de build: `pip install -r requirements.txt`
-- Comando de start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- Rode `alembic upgrade head` como parte do processo de deploy (ou manualmente na
-  primeira vez), antes de a aplicação começar a receber tráfego.
-- HTTPS é fornecido pela própria plataforma (Render/Railway/Fly.io terminam TLS).
-- Configure `CORS_ORIGINS` com o domínio real do frontend em produção.
+## Contexto acadêmico
+
+O Mercadez foi desenvolvido na **FATEC Ferraz de Vasconcelos**, dentro do contexto acadêmico de desenvolvimento de sistemas.
+
+A FATEC Ferraz oferece o curso superior de tecnologia em **Análise e Desenvolvimento de Sistemas**, entre outros cursos da unidade.
+
+O projeto busca transformar conhecimentos adquiridos durante a formação em uma solução aplicável a uma necessidade real: aproximar consumidores de melhores preços e oferecer aos pequenos comerciantes uma ferramenta digital de apoio ao negócio.
+
+---
+
+## Impacto esperado
+
+O Mercadez busca contribuir para:
+
+* Maior transparência nas informações de preços;
+* Facilidade na comparação de produtos;
+* Fortalecimento de pequenos estabelecimentos;
+* Digitalização do comércio local;
+* Melhoria na gestão de pequenos negócios;
+* Maior competitividade entre estabelecimentos;
+* Melhor tomada de decisão por parte dos consumidores.
+
+---
+
+## Licença
+
+Este projeto foi desenvolvido para fins acadêmicos.
+
+Todos os direitos relacionados ao projeto pertencem aos seus respectivos desenvolvedores, salvo indicação diferente nos arquivos do repositório.
+
+---
+
+## Mercadez
+
+<p align="center">
+  <strong>Mercado Nota Dez</strong>
+  <br>
+  Uma solução para comparar preços, apoiar pequenos comerciantes e facilitar a decisão de compra.
+</p>
+
+<p align="center">
+  Desenvolvido na FATEC Ferraz de Vasconcelos
+</p>
