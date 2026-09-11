@@ -55,6 +55,46 @@ def test_adicionar_listar_remover_item(client):
     assert len(listagem2.json()) == 0
 
 
+def test_economia_compara_com_produto_mais_barato(client):
+    """Mesmo produto (nome igual) em 2 afiliados com precos diferentes:
+    a lista deve apontar o mais barato e calcular a economia correta."""
+    # Afiliado 1: Arroz 5kg a 24.90
+    produto_caro_id = _criar_produto(client)
+
+    # Afiliado 2: mesmo produto, mais barato
+    client.post(
+        "/afiliados",
+        json={
+            "nome_proprietario": "Maria Dona",
+            "email": "loja3@email.com",
+            "senha": "senha123",
+            "cnpj": "11122233000144",
+            "mercado": "Mercado da Maria",
+        },
+    )
+    login2 = client.post("/afiliados/login", json={"email": "loja3@email.com", "senha": "senha123"})
+    token2 = login2.json()["token"]
+    client.post(
+        "/produtos",
+        json={"nomeProduto": "Arroz 5kg", "preco": "19.90", "quantidade": 5},
+        headers={"Authorization": f"Bearer {token2}"},
+    )
+
+    token_usuario = _criar_usuario_e_logar(client)
+    headers = {"Authorization": f"Bearer {token_usuario}"}
+
+    client.post("/listas", json={"produtoId": produto_caro_id, "quantidade": 2}, headers=headers)
+
+    resp = client.get("/listas/economia", headers=headers)
+    assert resp.status_code == 200
+    body = resp.json()
+
+    assert body["totalAtual"] == "49.80"       # 24.90 * 2
+    assert body["totalOtimizado"] == "39.80"   # 19.90 * 2
+    assert body["economiaTotal"] == "10.00"
+    assert body["itens"][0]["mercadoMaisBarato"] == "Mercado da Maria"
+
+
 def test_afiliado_nao_acessa_lista_de_usuario(client):
     """Token de AFILIADO nao pode ser usado em /listas (rota exclusiva de usuario)."""
     client.post(

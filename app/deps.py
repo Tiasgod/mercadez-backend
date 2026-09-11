@@ -67,3 +67,13 @@ def get_afiliado_id_atual(claims: dict = Depends(get_claims_atuais)) -> int:
             detail="Acesso restrito a afiliados.",
         )
     return int(claims["id"])
+
+
+def get_admin_id_atual(claims: dict = Depends(get_claims_atuais)) -> int:
+    """Garante que o token pertence a um usuario com perfil ADMIN."""
+    if claims.get("perfil") != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito a administradores.",
+        )
+    return int(claims["id"])

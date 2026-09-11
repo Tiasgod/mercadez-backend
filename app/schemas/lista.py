@@ -18,6 +18,31 @@ class AdicionarListaRequest(BaseModel):
     quantidade: int = Field(default=1, ge=1)
 
 
+class EconomiaItemResponse(BaseModel):
+    """Comparacao de 1 item da lista: o que o usuario escolheu vs a opcao
+    mais barata disponivel entre todos os afiliados que vendem o mesmo
+    produto no momento."""
+
+    produtoId: int
+    nome: str
+    quantidade: int
+    mercadoAtual: str
+    precoAtual: Decimal
+    mercadoMaisBarato: str
+    precoMaisBarato: Decimal
+    economiaItem: Decimal
+
+
+class EconomiaListaResponse(BaseModel):
+    """Resumo de economia da lista inteira: quanto custaria do jeito que
+    esta montada agora vs. pegando sempre a opcao mais barata por item."""
+
+    totalAtual: Decimal
+    totalOtimizado: Decimal
+    economiaTotal: Decimal
+    itens: list[EconomiaItemResponse]
+
+
 class ListaItemResponse(BaseModel):
     id: int
     produtoId: int

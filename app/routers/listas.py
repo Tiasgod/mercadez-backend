@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.deps import get_db, get_usuario_id_atual
-from app.schemas.lista import AdicionarListaRequest, ListaItemResponse
+from app.schemas.lista import AdicionarListaRequest, EconomiaListaResponse, ListaItemResponse
 from app.services import lista_service
 
 router = APIRouter(prefix="/listas", tags=["Listas"])
@@ -21,6 +21,16 @@ router = APIRouter(prefix="/listas", tags=["Listas"])
 def listar(usuario_id: int = Depends(get_usuario_id_atual), db: Session = Depends(get_db)):
     """GET /listas — itens da lista de compras do usuario logado."""
     return lista_service.listar(db, usuario_id)
+
+
+@router.get("/economia", response_model=EconomiaListaResponse)
+def economia(usuario_id: int = Depends(get_usuario_id_atual), db: Session = Depends(get_db)):
+    """
+    GET /listas/economia — compara cada item da lista com o menor preco
+    disponivel para o mesmo produto entre afiliados, e soma a economia
+    possivel na lista inteira.
+    """
+    return lista_service.calcular_economia(db, usuario_id)
 
 
 @router.post("", response_model=ListaItemResponse, status_code=status.HTTP_201_CREATED)

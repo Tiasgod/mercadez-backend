@@ -1,27 +1,6 @@
-# Ambiente virtual
-venv/
+﻿.env
 .venv/
-env/
-
-# Python
 __pycache__/
 *.pyc
-*.pyo
-*.egg-info/
 .pytest_cache/
-
-# Variaveis de ambiente e segredos
-.env
-*.env.local
-
-# Banco local
-*.db
-*.sqlite3
-
-# Editor / SO
-.vscode/
-.idea/
-.DS_Store
-
-# Logs
-*.log
+venv/
