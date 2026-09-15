@@ -17,7 +17,16 @@ from app.exceptions import (
     NaoEncontradoException,
     NegocioException,
 )
-from app.routers import afiliados, contato, dashboard, listas, produtos, usuarios
+from app.routers import (
+    afiliados,
+    comparacao,
+    contato,
+    dashboard,
+    listas,
+    produtos,
+    usuarios,
+    ofertas,
+)
 from app.schemas.common import ErroResponse
 
 logging.basicConfig(level=logging.INFO)
@@ -44,7 +53,8 @@ app.include_router(produtos.router)
 app.include_router(contato.router)
 app.include_router(listas.router)
 app.include_router(dashboard.router)
-
+app.include_router(comparacao.router)
+app.include_router(ofertas.router)
 
 def _erro_json(status_code: int, erro: str, mensagem: str) -> JSONResponse:
     body = ErroResponse(status=status_code, erro=erro, mensagem=mensagem)

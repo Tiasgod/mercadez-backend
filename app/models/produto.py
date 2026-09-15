@@ -18,7 +18,7 @@ class Produto(Base):
 
     nome_produto: Mapped[str] = mapped_column(
         "nome_produto",
-        String(150),
+        String(500),
         nullable=False,
     )
 

@@ -85,13 +85,22 @@ def comparar(db: Session, nome: str) -> list[ProdutoResponse]:
     return [ProdutoResponse.de(p) for p in produtos]
 
 
-def atualizar(db: Session, produto_id: int, req: CadastroProdutoRequest, afiliado_id: int) -> ProdutoResponse:
+def atualizar(
+    db: Session,
+    produto_id: int,
+    req: CadastroProdutoRequest,
+    afiliado_id: int,
+) -> ProdutoResponse:
+
     produto = db.get(Produto, produto_id)
+
     if produto is None:
         raise NaoEncontradoException("Produto nao encontrado.")
 
     if produto.afiliado_id != afiliado_id:
-        raise AcessoNegadoException("Voce nao tem permissao para editar este produto.")
+        raise AcessoNegadoException(
+            "Voce nao tem permissao para editar este produto."
+        )
 
     preco_mudou = produto.preco != req.preco
 
@@ -101,12 +110,16 @@ def atualizar(db: Session, produto_id: int, req: CadastroProdutoRequest, afiliad
     produto.quantidade = req.quantidade
 
     if preco_mudou:
-        _registrar_preco(db, produto.id, req.preco)
+        _registrar_preco(
+            db,
+            produto.id,
+            req.preco,
+        )
 
     db.commit()
     db.refresh(produto)
-    return ProdutoResponse.de(produto)
 
+    return ProdutoResponse.de(produto)
 
 def deletar(db: Session, produto_id: int, afiliado_id: int) -> None:
     produto = db.get(Produto, produto_id)
