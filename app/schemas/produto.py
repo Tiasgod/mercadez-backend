@@ -1,4 +1,5 @@
-"""Equivalente Python de CadastroProdutoRequest / ProdutoResponse."""
+"""Schemas de cadastro e resposta de produtos."""
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
@@ -20,20 +21,30 @@ class ProdutoResponse(BaseModel):
     preco: Decimal
     quantidade: int
     mercado: str
-    afiliadoId: int
+    afiliadoId: Optional[int] = None
     criadoEm: datetime
 
     model_config = {"from_attributes": True}
 
     @classmethod
     def de(cls, produto) -> "ProdutoResponse":
+
+        if produto.afiliado is not None:
+            mercado = produto.afiliado.mercado
+
+        elif produto.loja_externa is not None:
+            mercado = produto.loja_externa.nome
+
+        else:
+            mercado = "Mercado não informado"
+
         return cls(
             id=produto.id,
             nomeProduto=produto.nome_produto,
             tags=produto.tags,
             preco=produto.preco,
             quantidade=produto.quantidade,
-            mercado=produto.afiliado.mercado,
+            mercado=mercado,
             afiliadoId=produto.afiliado_id,
             criadoEm=produto.criado_em,
         )
