@@ -1,7 +1,7 @@
 
 """Equivalente Python de service/ProdutoService.java"""
 
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.exceptions import (
@@ -28,6 +28,14 @@ def _registrar_preco(
             produto_id=produto_id,
             preco=preco,
         )
+    )
+
+
+def _filtro_imagem():
+    """Seleciona produtos com URL de imagem preenchida."""
+    return and_(
+        Produto.imagem_url.is_not(None),
+        func.length(func.trim(Produto.imagem_url)) > 0,
     )
 
 
@@ -71,15 +79,16 @@ def listar_todos(
     db: Session,
     limit: int = 20,
     offset: int = 0,
+    com_imagem: bool = False,
 ) -> list[ProdutoResponse]:
     """
     Lista produtos ativos com paginacao.
 
-    limit: quantidade maxima de produtos.
-    offset: quantidade de registros ignorados.
+    Quando com_imagem=True, retorna somente
+    produtos com URL de fotografia cadastrada.
     """
 
-    produtos = db.scalars(
+    consulta = (
         select(Produto)
         .options(
             joinedload(Produto.afiliado),
@@ -96,10 +105,19 @@ def listar_todos(
                 ),
             ),
         )
+    )
+
+    if com_imagem:
+        consulta = consulta.where(_filtro_imagem())
+
+    consulta = (
+        consulta
         .order_by(Produto.id.asc())
         .offset(offset)
         .limit(limit)
-    ).unique().all()
+    )
+
+    produtos = db.scalars(consulta).unique().all()
 
     return [
         ProdutoResponse.de(produto)
@@ -112,12 +130,15 @@ def listar_por_afiliado(
     afiliado_id: int,
     limit: int = 20,
     offset: int = 0,
+    com_imagem: bool = False,
 ) -> list[ProdutoResponse]:
     """
     Lista produtos ativos de um afiliado com paginacao.
+
+    Permite filtrar produtos com fotografia.
     """
 
-    produtos = db.scalars(
+    consulta = (
         select(Produto)
         .options(
             joinedload(Produto.afiliado),
@@ -127,10 +148,19 @@ def listar_por_afiliado(
             Produto.afiliado_id == afiliado_id,
             Produto.ativo.is_(True),
         )
+    )
+
+    if com_imagem:
+        consulta = consulta.where(_filtro_imagem())
+
+    consulta = (
+        consulta
         .order_by(Produto.id.asc())
         .offset(offset)
         .limit(limit)
-    ).unique().all()
+    )
+
+    produtos = db.scalars(consulta).unique().all()
 
     return [
         ProdutoResponse.de(produto)
