@@ -523,6 +523,43 @@ def _carregar_produtos_da_loja(
 
 
 # ============================================================
+# EXTRAIR URL REAL DA IMAGEM DO NAGUMO
+# ============================================================
+
+def _extrair_url_imagem(produto_nagumo: dict) -> str | None:
+    """Retorna a primeira URL HTTPS válida, priorizando imagem grande."""
+    imagens = produto_nagumo.get("images") or {}
+    if not isinstance(imagens, dict):
+        return None
+
+    for tamanho in ("large", "medium", "small"):
+        lista = imagens.get(tamanho) or []
+        if not isinstance(lista, list):
+            continue
+
+        for imagem in lista:
+            if not isinstance(imagem, dict):
+                continue
+            origem = imagem.get("src") or {}
+            if not isinstance(origem, dict):
+                origem = {}
+            for url in (origem.get("disUrl"), imagem.get("absURL")):
+                if isinstance(url, str) and url.startswith("https://"):
+                    return url
+    return None
+
+
+def _validar_coluna_imagem() -> None:
+    """Evita executar a coleta se o modelo ainda não suporta imagens."""
+    if "imagem_url" not in Produto.__table__.columns:
+        raise RuntimeError(
+            "O modelo Produto ainda não possui a coluna 'imagem_url'. "
+            "Adicione a coluna ao modelo e aplique a migração no banco "
+            "antes de executar o scraper. Nenhum produto foi alterado."
+        )
+
+
+# ============================================================
 # SALVAR / ATUALIZAR PRODUTO
 # ============================================================
 
@@ -563,6 +600,8 @@ def _salvar_produto(
 
         return "ignorado"
 
+    imagem_url = _extrair_url_imagem(produto_nagumo)
+
     # ========================================================
     # PRODUTO NOVO
     # ========================================================
@@ -577,6 +616,7 @@ def _salvar_produto(
             quantidade=0,
             origem="EXTERNO",
             loja_externa_id=loja.id,
+            imagem_url=imagem_url,
         )
 
         db.add(produto)
@@ -597,6 +637,11 @@ def _salvar_produto(
         )
 
         return "novo"
+
+    # Atualiza a imagem mesmo quando o preço não muda.
+    # Não apaga uma imagem existente se o Nagumo omitir a URL.
+    if imagem_url and produto.imagem_url != imagem_url:
+        produto.imagem_url = imagem_url
 
     # ========================================================
     # PREÇO IGUAL
@@ -936,6 +981,7 @@ def rodar(
     todos: bool = False,
 ) -> None:
 
+    _validar_coluna_imagem()
     playwright = sync_playwright().start()
 
     browser = None

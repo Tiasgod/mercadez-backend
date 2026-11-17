@@ -1,3 +1,4 @@
+
 """Schemas de cadastro e resposta de produtos."""
 
 from datetime import datetime
@@ -23,6 +24,7 @@ class ProdutoResponse(BaseModel):
     mercado: str
     afiliadoId: Optional[int] = None
     criadoEm: datetime
+    imagemUrl: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -47,4 +49,5 @@ class ProdutoResponse(BaseModel):
             mercado=mercado,
             afiliadoId=produto.afiliado_id,
             criadoEm=produto.criado_em,
+            imagemUrl=produto.imagem_url,
         )

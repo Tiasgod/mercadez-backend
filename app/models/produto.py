@@ -1,4 +1,6 @@
+
 """Modelo SQLAlchemy de Produto."""
+
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -24,6 +26,11 @@ class Produto(Base):
 
     tags: Mapped[str | None] = mapped_column(
         String(500),
+        nullable=True,
+    )
+
+    imagem_url: Mapped[str | None] = mapped_column(
+        String(2048),
         nullable=True,
     )
 
