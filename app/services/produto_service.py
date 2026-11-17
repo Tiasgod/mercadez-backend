@@ -1,3 +1,4 @@
+
 """Equivalente Python de service/ProdutoService.java"""
 
 from sqlalchemy import select, or_
@@ -15,21 +16,33 @@ from app.models.produto import Produto
 from app.schemas.produto import CadastroProdutoRequest, ProdutoResponse
 
 
-def _registrar_preco(db: Session, produto_id: int, preco) -> None:
+def _registrar_preco(
+    db: Session,
+    produto_id: int,
+    preco,
+) -> None:
     """Grava um snapshot do preco no historico."""
-    db.add(HistoricoPreco(produto_id=produto_id, preco=preco))
+
+    db.add(
+        HistoricoPreco(
+            produto_id=produto_id,
+            preco=preco,
+        )
+    )
 
 
 def cadastrar(
     db: Session,
     req: CadastroProdutoRequest,
-    afiliado_id: int
+    afiliado_id: int,
 ) -> ProdutoResponse:
 
     afiliado = db.get(Afiliado, afiliado_id)
 
     if afiliado is None or not afiliado.ativo:
-        raise NaoEncontradoException("Afiliado nao encontrado ou desativado.")
+        raise NaoEncontradoException(
+            "Afiliado nao encontrado ou desativado."
+        )
 
     produto = Produto(
         nome_produto=req.nomeProduto,
@@ -42,7 +55,11 @@ def cadastrar(
     db.add(produto)
     db.flush()
 
-    _registrar_preco(db, produto.id, produto.preco)
+    _registrar_preco(
+        db,
+        produto.id,
+        produto.preco,
+    )
 
     db.commit()
     db.refresh(produto)
@@ -50,7 +67,17 @@ def cadastrar(
     return ProdutoResponse.de(produto)
 
 
-def listar_todos(db: Session) -> list[ProdutoResponse]:
+def listar_todos(
+    db: Session,
+    limit: int = 20,
+    offset: int = 0,
+) -> list[ProdutoResponse]:
+    """
+    Lista produtos ativos com paginacao.
+
+    limit: quantidade maxima de produtos.
+    offset: quantidade de registros ignorados.
+    """
 
     produtos = db.scalars(
         select(Produto)
@@ -61,19 +88,34 @@ def listar_todos(db: Session) -> list[ProdutoResponse]:
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(Afiliado.ativo.is_(True)),
-                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
+                Produto.afiliado.has(
+                    Afiliado.ativo.is_(True)
+                ),
+                Produto.loja_externa.has(
+                    LojaExterna.ativo.is_(True)
+                ),
             ),
         )
+        .order_by(Produto.id.asc())
+        .offset(offset)
+        .limit(limit)
     ).unique().all()
 
-    return [ProdutoResponse.de(p) for p in produtos]
+    return [
+        ProdutoResponse.de(produto)
+        for produto in produtos
+    ]
 
 
 def listar_por_afiliado(
     db: Session,
-    afiliado_id: int
+    afiliado_id: int,
+    limit: int = 20,
+    offset: int = 0,
 ) -> list[ProdutoResponse]:
+    """
+    Lista produtos ativos de um afiliado com paginacao.
+    """
 
     produtos = db.scalars(
         select(Produto)
@@ -85,17 +127,30 @@ def listar_por_afiliado(
             Produto.afiliado_id == afiliado_id,
             Produto.ativo.is_(True),
         )
-    ).all()
+        .order_by(Produto.id.asc())
+        .offset(offset)
+        .limit(limit)
+    ).unique().all()
 
-    return [ProdutoResponse.de(p) for p in produtos]
+    return [
+        ProdutoResponse.de(produto)
+        for produto in produtos
+    ]
 
 
-def buscar(db: Session, termo: str) -> list[ProdutoResponse]:
+def buscar(
+    db: Session,
+    termo: str,
+) -> list[ProdutoResponse]:
+    """
+    Busca produtos ativos pelo nome ou pelas tags.
+    Ordena os resultados pelo menor preco.
+    """
 
     if not termo or not termo.strip():
         return listar_todos(db)
 
-    padrao = f"%{termo.lower()}%"
+    padrao = f"%{termo.strip()}%"
 
     produtos = db.scalars(
         select(Produto)
@@ -106,8 +161,12 @@ def buscar(db: Session, termo: str) -> list[ProdutoResponse]:
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(Afiliado.ativo.is_(True)),
-                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
+                Produto.afiliado.has(
+                    Afiliado.ativo.is_(True)
+                ),
+                Produto.loja_externa.has(
+                    LojaExterna.ativo.is_(True)
+                ),
             ),
             or_(
                 Produto.nome_produto.ilike(padrao),
@@ -115,19 +174,29 @@ def buscar(db: Session, termo: str) -> list[ProdutoResponse]:
             ),
         )
         .order_by(Produto.preco.asc())
-    ).all()
+    ).unique().all()
 
-    return [ProdutoResponse.de(p) for p in produtos]
+    return [
+        ProdutoResponse.de(produto)
+        for produto in produtos
+    ]
 
 
-def comparar(db: Session, nome: str) -> list[ProdutoResponse]:
+def comparar(
+    db: Session,
+    nome: str,
+) -> list[ProdutoResponse]:
+    """
+    Compara produtos pelo nome.
+    Ordena os resultados pelo menor preco.
+    """
 
     if not nome or not nome.strip():
         raise NegocioException(
             "Informe o nome do produto para comparar."
         )
 
-    padrao = f"%{nome.lower()}%"
+    padrao = f"%{nome.strip()}%"
 
     produtos = db.scalars(
         select(Produto)
@@ -138,15 +207,22 @@ def comparar(db: Session, nome: str) -> list[ProdutoResponse]:
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(Afiliado.ativo.is_(True)),
-                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
+                Produto.afiliado.has(
+                    Afiliado.ativo.is_(True)
+                ),
+                Produto.loja_externa.has(
+                    LojaExterna.ativo.is_(True)
+                ),
             ),
             Produto.nome_produto.ilike(padrao),
         )
         .order_by(Produto.preco.asc())
-    ).all()
+    ).unique().all()
 
-    return [ProdutoResponse.de(p) for p in produtos]
+    return [
+        ProdutoResponse.de(produto)
+        for produto in produtos
+    ]
 
 
 def atualizar(
@@ -159,7 +235,9 @@ def atualizar(
     produto = db.get(Produto, produto_id)
 
     if produto is None:
-        raise NaoEncontradoException("Produto nao encontrado.")
+        raise NaoEncontradoException(
+            "Produto nao encontrado."
+        )
 
     if produto.afiliado_id != afiliado_id:
         raise AcessoNegadoException(
@@ -189,13 +267,18 @@ def atualizar(
 def deletar(
     db: Session,
     produto_id: int,
-    afiliado_id: int
+    afiliado_id: int,
 ) -> None:
+    """
+    Realiza exclusao logica do produto.
+    """
 
     produto = db.get(Produto, produto_id)
 
     if produto is None:
-        raise NaoEncontradoException("Produto nao encontrado.")
+        raise NaoEncontradoException(
+            "Produto nao encontrado."
+        )
 
     if produto.afiliado_id != afiliado_id:
         raise AcessoNegadoException(
