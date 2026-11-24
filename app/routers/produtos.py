@@ -22,22 +22,32 @@ router = APIRouter(
 )
 def listar(
     afiliado: Optional[int] = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    com_imagem: bool = Query(default=False),
     db: Session = Depends(get_db),
 ):
     """
-    GET /produtos
+    Lista produtos ativos com paginacao.
 
-    Lista todos os produtos ativos.
-    Aceita ?afiliado=<id> para filtrar por loja.
+    Permite filtrar por afiliado e por imagem.
     """
 
     if afiliado is not None:
         return produto_service.listar_por_afiliado(
             db,
             afiliado,
+            limit=limit,
+            offset=offset,
+            com_imagem=com_imagem,
         )
 
-    return produto_service.listar_todos(db)
+    return produto_service.listar_todos(
+        db,
+        limit=limit,
+        offset=offset,
+        com_imagem=com_imagem,
+    )
 
 
 @router.get(
@@ -46,17 +56,21 @@ def listar(
 )
 def buscar(
     q: str = Query(...),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    com_imagem: bool = Query(default=False),
     db: Session = Depends(get_db),
 ):
     """
-    GET /produtos/buscar?q=arroz
-
-    Busca produtos por nome ou tag.
+    Busca produtos por nome ou tag com paginacao.
     """
 
     return produto_service.buscar(
         db,
         q,
+        limit=limit,
+        offset=offset,
+        com_imagem=com_imagem,
     )
 
 
@@ -68,12 +82,6 @@ def comparar(
     nome: str = Query(...),
     db: Session = Depends(get_db),
 ):
-    """
-    GET /produtos/comparar?nome=leite
-
-    Mantém a comparação antiga entre produtos.
-    """
-
     return produto_service.comparar(
         db,
         nome,
@@ -90,13 +98,6 @@ def cadastrar(
     afiliado_id: int = Depends(get_afiliado_id_atual),
     db: Session = Depends(get_db),
 ):
-    """
-    POST /produtos
-
-    Cadastra produto.
-    Apenas afiliado autenticado.
-    """
-
     return produto_service.cadastrar(
         db,
         req,
@@ -114,12 +115,6 @@ def atualizar(
     afiliado_id: int = Depends(get_afiliado_id_atual),
     db: Session = Depends(get_db),
 ):
-    """
-    PUT /produtos/{id}
-
-    Atualiza produto e verifica o proprietário pelo JWT.
-    """
-
     return produto_service.atualizar(
         db,
         produto_id,
@@ -137,12 +132,6 @@ def deletar(
     afiliado_id: int = Depends(get_afiliado_id_atual),
     db: Session = Depends(get_db),
 ):
-    """
-    DELETE /produtos/{id}
-
-    Realiza soft-delete.
-    """
-
     produto_service.deletar(
         db,
         produto_id,
