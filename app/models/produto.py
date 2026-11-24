@@ -1,10 +1,8 @@
-
 """Modelo SQLAlchemy de Produto."""
-
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -29,15 +27,14 @@ class Produto(Base):
         nullable=True,
     )
 
-    imagem_url: Mapped[str | None] = mapped_column(
-        String(2048),
-        nullable=True,
-    )
-
     preco: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,
     )
+
+    # As fotos permanecem hospedadas no Nagumo; salvamos seus enderecos.
+    imagem_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    imagens_urls: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
     quantidade: Mapped[int] = mapped_column(
         Integer,

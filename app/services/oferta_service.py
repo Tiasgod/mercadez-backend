@@ -17,13 +17,16 @@ def listar_ofertas(db: Session, limite: int = 20) -> list[OfertaResponse]:
         ofertas.append(
             OfertaResponse(
                 produto=comparacao.produto,
+                imagemUrl=comparacao.imagemUrl,
+                imagensUrls=comparacao.imagensUrls,
                 melhor_loja=melhor_loja,
                 preco=comparacao.menor_preco,
                 preco_mais_alto=comparacao.maior_preco,
                 economia=comparacao.economia,
                 percentual_economia=comparacao.percentual_economia,
                 precos=[
-                    PrecoOfertaResponse(loja=item.loja, preco=item.preco)
+                    PrecoOfertaResponse(loja=item.loja, preco=item.preco,
+                                        imagemUrl=item.imagemUrl, imagensUrls=item.imagensUrls)
                     for item in comparacao.precos
                 ],
             )

@@ -1,4 +1,3 @@
-
 """Schemas de cadastro e resposta de produtos."""
 
 from datetime import datetime
@@ -13,6 +12,8 @@ class CadastroProdutoRequest(BaseModel):
     tags: Optional[str] = Field(default=None, max_length=500)
     preco: Decimal = Field(gt=0, description="Preco deve ser maior que zero")
     quantidade: int = Field(ge=0)
+    imagemUrl: Optional[str] = Field(default=None, max_length=2048)
+    imagensUrls: list[str] = Field(default_factory=list)
 
 
 class ProdutoResponse(BaseModel):
@@ -22,9 +23,10 @@ class ProdutoResponse(BaseModel):
     preco: Decimal
     quantidade: int
     mercado: str
+    imagemUrl: Optional[str] = None
+    imagensUrls: list[str] = Field(default_factory=list)
     afiliadoId: Optional[int] = None
     criadoEm: datetime
-    imagemUrl: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -47,7 +49,8 @@ class ProdutoResponse(BaseModel):
             preco=produto.preco,
             quantidade=produto.quantidade,
             mercado=mercado,
+            imagemUrl=produto.imagem_url,
+            imagensUrls=produto.imagens_urls or [],
             afiliadoId=produto.afiliado_id,
             criadoEm=produto.criado_em,
-            imagemUrl=produto.imagem_url,
         )

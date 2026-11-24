@@ -1,4 +1,3 @@
-
 """Equivalente Python de controller/ProdutoController.java"""
 
 from typing import Optional
@@ -23,38 +22,22 @@ router = APIRouter(
 )
 def listar(
     afiliado: Optional[int] = Query(default=None),
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
-    com_imagem: bool = Query(default=False),
     db: Session = Depends(get_db),
 ):
     """
     GET /produtos
 
-    Lista produtos ativos com paginacao.
-
-    Parametros:
-    - afiliado: filtra produtos por loja
-    - limit: quantidade de produtos (1 a 100)
-    - offset: quantidade de registros a pular
-    - com_imagem: retorna somente produtos com fotografia
+    Lista todos os produtos ativos.
+    Aceita ?afiliado=<id> para filtrar por loja.
     """
 
     if afiliado is not None:
         return produto_service.listar_por_afiliado(
             db,
             afiliado,
-            limit=limit,
-            offset=offset,
-            com_imagem=com_imagem,
         )
 
-    return produto_service.listar_todos(
-        db,
-        limit=limit,
-        offset=offset,
-        com_imagem=com_imagem,
-    )
+    return produto_service.listar_todos(db)
 
 
 @router.get(
@@ -88,7 +71,7 @@ def comparar(
     """
     GET /produtos/comparar?nome=leite
 
-    Mantem a comparacao antiga entre produtos.
+    Mantém a comparação antiga entre produtos.
     """
 
     return produto_service.comparar(
@@ -134,7 +117,7 @@ def atualizar(
     """
     PUT /produtos/{id}
 
-    Atualiza produto e verifica o proprietario pelo JWT.
+    Atualiza produto e verifica o proprietário pelo JWT.
     """
 
     return produto_service.atualizar(

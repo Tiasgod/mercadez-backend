@@ -1,7 +1,6 @@
-
 """Equivalente Python de service/ProdutoService.java"""
 
-from sqlalchemy import select, or_, and_, func
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.exceptions import (
@@ -16,45 +15,27 @@ from app.models.produto import Produto
 from app.schemas.produto import CadastroProdutoRequest, ProdutoResponse
 
 
-def _registrar_preco(
-    db: Session,
-    produto_id: int,
-    preco,
-) -> None:
+def _registrar_preco(db: Session, produto_id: int, preco) -> None:
     """Grava um snapshot do preco no historico."""
-
-    db.add(
-        HistoricoPreco(
-            produto_id=produto_id,
-            preco=preco,
-        )
-    )
-
-
-def _filtro_imagem():
-    """Seleciona produtos com URL de imagem preenchida."""
-    return and_(
-        Produto.imagem_url.is_not(None),
-        func.length(func.trim(Produto.imagem_url)) > 0,
-    )
+    db.add(HistoricoPreco(produto_id=produto_id, preco=preco))
 
 
 def cadastrar(
     db: Session,
     req: CadastroProdutoRequest,
-    afiliado_id: int,
+    afiliado_id: int
 ) -> ProdutoResponse:
 
     afiliado = db.get(Afiliado, afiliado_id)
 
     if afiliado is None or not afiliado.ativo:
-        raise NaoEncontradoException(
-            "Afiliado nao encontrado ou desativado."
-        )
+        raise NaoEncontradoException("Afiliado nao encontrado ou desativado.")
 
     produto = Produto(
         nome_produto=req.nomeProduto,
         tags=req.tags,
+        imagem_url=req.imagemUrl or (req.imagensUrls[0] if req.imagensUrls else None),
+        imagens_urls=req.imagensUrls or ([req.imagemUrl] if req.imagemUrl else []),
         preco=req.preco,
         quantidade=req.quantidade,
         afiliado_id=afiliado_id,
@@ -63,11 +44,7 @@ def cadastrar(
     db.add(produto)
     db.flush()
 
-    _registrar_preco(
-        db,
-        produto.id,
-        produto.preco,
-    )
+    _registrar_preco(db, produto.id, produto.preco)
 
     db.commit()
     db.refresh(produto)
@@ -75,20 +52,9 @@ def cadastrar(
     return ProdutoResponse.de(produto)
 
 
-def listar_todos(
-    db: Session,
-    limit: int = 20,
-    offset: int = 0,
-    com_imagem: bool = False,
-) -> list[ProdutoResponse]:
-    """
-    Lista produtos ativos com paginacao.
+def listar_todos(db: Session) -> list[ProdutoResponse]:
 
-    Quando com_imagem=True, retorna somente
-    produtos com URL de fotografia cadastrada.
-    """
-
-    consulta = (
+    produtos = db.scalars(
         select(Produto)
         .options(
             joinedload(Produto.afiliado),
@@ -97,48 +63,21 @@ def listar_todos(
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(
-                    Afiliado.ativo.is_(True)
-                ),
-                Produto.loja_externa.has(
-                    LojaExterna.ativo.is_(True)
-                ),
+                Produto.afiliado.has(Afiliado.ativo.is_(True)),
+                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
             ),
         )
-    )
+    ).unique().all()
 
-    if com_imagem:
-        consulta = consulta.where(_filtro_imagem())
-
-    consulta = (
-        consulta
-        .order_by(Produto.id.asc())
-        .offset(offset)
-        .limit(limit)
-    )
-
-    produtos = db.scalars(consulta).unique().all()
-
-    return [
-        ProdutoResponse.de(produto)
-        for produto in produtos
-    ]
+    return [ProdutoResponse.de(p) for p in produtos]
 
 
 def listar_por_afiliado(
     db: Session,
-    afiliado_id: int,
-    limit: int = 20,
-    offset: int = 0,
-    com_imagem: bool = False,
+    afiliado_id: int
 ) -> list[ProdutoResponse]:
-    """
-    Lista produtos ativos de um afiliado com paginacao.
 
-    Permite filtrar produtos com fotografia.
-    """
-
-    consulta = (
+    produtos = db.scalars(
         select(Produto)
         .options(
             joinedload(Produto.afiliado),
@@ -148,39 +87,17 @@ def listar_por_afiliado(
             Produto.afiliado_id == afiliado_id,
             Produto.ativo.is_(True),
         )
-    )
+    ).all()
 
-    if com_imagem:
-        consulta = consulta.where(_filtro_imagem())
-
-    consulta = (
-        consulta
-        .order_by(Produto.id.asc())
-        .offset(offset)
-        .limit(limit)
-    )
-
-    produtos = db.scalars(consulta).unique().all()
-
-    return [
-        ProdutoResponse.de(produto)
-        for produto in produtos
-    ]
+    return [ProdutoResponse.de(p) for p in produtos]
 
 
-def buscar(
-    db: Session,
-    termo: str,
-) -> list[ProdutoResponse]:
-    """
-    Busca produtos ativos pelo nome ou pelas tags.
-    Ordena os resultados pelo menor preco.
-    """
+def buscar(db: Session, termo: str) -> list[ProdutoResponse]:
 
     if not termo or not termo.strip():
         return listar_todos(db)
 
-    padrao = f"%{termo.strip()}%"
+    padrao = f"%{termo.lower()}%"
 
     produtos = db.scalars(
         select(Produto)
@@ -191,12 +108,8 @@ def buscar(
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(
-                    Afiliado.ativo.is_(True)
-                ),
-                Produto.loja_externa.has(
-                    LojaExterna.ativo.is_(True)
-                ),
+                Produto.afiliado.has(Afiliado.ativo.is_(True)),
+                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
             ),
             or_(
                 Produto.nome_produto.ilike(padrao),
@@ -204,29 +117,19 @@ def buscar(
             ),
         )
         .order_by(Produto.preco.asc())
-    ).unique().all()
+    ).all()
 
-    return [
-        ProdutoResponse.de(produto)
-        for produto in produtos
-    ]
+    return [ProdutoResponse.de(p) for p in produtos]
 
 
-def comparar(
-    db: Session,
-    nome: str,
-) -> list[ProdutoResponse]:
-    """
-    Compara produtos pelo nome.
-    Ordena os resultados pelo menor preco.
-    """
+def comparar(db: Session, nome: str) -> list[ProdutoResponse]:
 
     if not nome or not nome.strip():
         raise NegocioException(
             "Informe o nome do produto para comparar."
         )
 
-    padrao = f"%{nome.strip()}%"
+    padrao = f"%{nome.lower()}%"
 
     produtos = db.scalars(
         select(Produto)
@@ -237,22 +140,15 @@ def comparar(
         .where(
             Produto.ativo.is_(True),
             or_(
-                Produto.afiliado.has(
-                    Afiliado.ativo.is_(True)
-                ),
-                Produto.loja_externa.has(
-                    LojaExterna.ativo.is_(True)
-                ),
+                Produto.afiliado.has(Afiliado.ativo.is_(True)),
+                Produto.loja_externa.has(LojaExterna.ativo.is_(True)),
             ),
             Produto.nome_produto.ilike(padrao),
         )
         .order_by(Produto.preco.asc())
-    ).unique().all()
+    ).all()
 
-    return [
-        ProdutoResponse.de(produto)
-        for produto in produtos
-    ]
+    return [ProdutoResponse.de(p) for p in produtos]
 
 
 def atualizar(
@@ -265,9 +161,7 @@ def atualizar(
     produto = db.get(Produto, produto_id)
 
     if produto is None:
-        raise NaoEncontradoException(
-            "Produto nao encontrado."
-        )
+        raise NaoEncontradoException("Produto nao encontrado.")
 
     if produto.afiliado_id != afiliado_id:
         raise AcessoNegadoException(
@@ -278,6 +172,11 @@ def atualizar(
 
     produto.nome_produto = req.nomeProduto
     produto.tags = req.tags
+    # Em atualizacoes antigas do front, campos de imagem podem estar ausentes.
+    # Nesse caso, preservamos as imagens ja cadastradas.
+    if "imagemUrl" in req.model_fields_set or "imagensUrls" in req.model_fields_set:
+        produto.imagem_url = req.imagemUrl or (req.imagensUrls[0] if req.imagensUrls else None)
+        produto.imagens_urls = req.imagensUrls or ([req.imagemUrl] if req.imagemUrl else [])
     produto.preco = req.preco
     produto.quantidade = req.quantidade
 
@@ -297,18 +196,13 @@ def atualizar(
 def deletar(
     db: Session,
     produto_id: int,
-    afiliado_id: int,
+    afiliado_id: int
 ) -> None:
-    """
-    Realiza exclusao logica do produto.
-    """
 
     produto = db.get(Produto, produto_id)
 
     if produto is None:
-        raise NaoEncontradoException(
-            "Produto nao encontrado."
-        )
+        raise NaoEncontradoException("Produto nao encontrado.")
 
     if produto.afiliado_id != afiliado_id:
         raise AcessoNegadoException(

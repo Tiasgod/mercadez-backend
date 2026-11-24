@@ -4,7 +4,7 @@ import argparse
 import json
 import time
 from decimal import Decimal
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin, urlparse
 
 from playwright.sync_api import (
     BrowserContext,
@@ -523,40 +523,57 @@ def _carregar_produtos_da_loja(
 
 
 # ============================================================
-# EXTRAIR URL REAL DA IMAGEM DO NAGUMO
+# IMAGENS DISPONIVEIS NO JSON DO CATALOGO
 # ============================================================
 
-def _extrair_url_imagem(produto_nagumo: dict) -> str | None:
-    """Retorna a primeira URL HTTPS válida, priorizando imagem grande."""
-    imagens = produto_nagumo.get("images") or {}
-    if not isinstance(imagens, dict):
-        return None
+def _extrair_imagens(produto_nagumo: dict) -> list[str]:
+    """Coleta URLs de imagem presentes no produto, sem downloads adicionais.
 
-    for tamanho in ("large", "medium", "small"):
-        lista = imagens.get(tamanho) or []
-        if not isinstance(lista, list):
-            continue
+    Compatibilidade com os formatos comuns de SFCC: image, images,
+    imageGroups, imageUrl, productImage e suas variacoes.
+    """
+    encontrados: list[str] = []
+    vistos: set[str] = set()
+    campos_url = {"url", "src", "link", "absurl", "absoluteurl", "imageurl", "image_url", "href"}
+    campos_imagem = {"image", "images", "imagegroups", "imagegroup", "productimage",
+                     "productimages", "imageurl", "image_url", "thumbnail", "thumbnailurl",
+                     "largeimage", "smallimage", "mediumimage", "primaryimage", "variationimages"}
 
-        for imagem in lista:
-            if not isinstance(imagem, dict):
-                continue
-            origem = imagem.get("src") or {}
-            if not isinstance(origem, dict):
-                origem = {}
-            for url in (origem.get("disUrl"), imagem.get("absURL")):
-                if isinstance(url, str) and url.startswith("https://"):
-                    return url
-    return None
+    def guardar(valor):
+        if not isinstance(valor, str) or not valor.strip():
+            return
+        url = urljoin(BASE + "/", valor.strip())
+        parsed = urlparse(url)
+        if parsed.scheme not in ("https", "http") or not parsed.netloc:
+            return
+        if len(url) > 2048 or url in vistos:
+            return
+        vistos.add(url)
+        encontrados.append(url)
 
+    def percorrer(valor, contexto_imagem=False, profundidade=0):
+        if profundidade > 10:
+            return
+        if isinstance(valor, str):
+            if contexto_imagem:
+                guardar(valor)
+        elif isinstance(valor, list):
+            for item in valor:
+                percorrer(item, contexto_imagem, profundidade + 1)
+        elif isinstance(valor, dict):
+            for chave, item in valor.items():
+                key = chave.lower().replace("_", "").replace("-", "")
+                if key in campos_imagem or key.startswith("image") or key.endswith("image"):
+                    percorrer(item, True, profundidade + 1)
+                elif contexto_imagem and (key in campos_url or key in
+                      {"large", "medium", "small", "hires", "desktop", "mobile", "images", "viewtype"}):
+                    if key != "viewtype":
+                        percorrer(item, True, profundidade + 1)
+                elif contexto_imagem and isinstance(item, (dict, list)):
+                    percorrer(item, True, profundidade + 1)
 
-def _validar_coluna_imagem() -> None:
-    """Evita executar a coleta se o modelo ainda não suporta imagens."""
-    if "imagem_url" not in Produto.__table__.columns:
-        raise RuntimeError(
-            "O modelo Produto ainda não possui a coluna 'imagem_url'. "
-            "Adicione a coluna ao modelo e aplique a migração no banco "
-            "antes de executar o scraper. Nenhum produto foi alterado."
-        )
+    percorrer(produto_nagumo)
+    return encontrados
 
 
 # ============================================================
@@ -600,7 +617,7 @@ def _salvar_produto(
 
         return "ignorado"
 
-    imagem_url = _extrair_url_imagem(produto_nagumo)
+    imagens_urls = _extrair_imagens(produto_nagumo)
 
     # ========================================================
     # PRODUTO NOVO
@@ -616,7 +633,8 @@ def _salvar_produto(
             quantidade=0,
             origem="EXTERNO",
             loja_externa_id=loja.id,
-            imagem_url=imagem_url,
+            imagem_url=imagens_urls[0] if imagens_urls else None,
+            imagens_urls=imagens_urls,
         )
 
         db.add(produto)
@@ -638,10 +656,14 @@ def _salvar_produto(
 
         return "novo"
 
-    # Atualiza a imagem mesmo quando o preço não muda.
-    # Não apaga uma imagem existente se o Nagumo omitir a URL.
-    if imagem_url and produto.imagem_url != imagem_url:
-        produto.imagem_url = imagem_url
+    # Atualiza as fotos mesmo quando o preco nao mudou.
+    # Se a coleta atual nao trouxer imagens, preservamos as anteriores.
+    if imagens_urls:
+        mescladas = list(dict.fromkeys((produto.imagens_urls or []) + imagens_urls))
+        if produto.imagens_urls != mescladas:
+            produto.imagens_urls = mescladas
+        if not produto.imagem_url:
+            produto.imagem_url = mescladas[0]
 
     # ========================================================
     # PREÇO IGUAL
@@ -804,6 +826,12 @@ def _processar_loja(
             )
 
             db.rollback()
+            # A loja pode ter sido criada na transacao revertida.
+            loja = db.query(LojaExterna).filter_by(nome=loja_nome).one_or_none()
+            if loja is None:
+                loja = LojaExterna(nome=loja_nome, dominio="www.nagumo.com.br", plataforma="SFCC")
+                db.add(loja)
+                db.flush()
 
             # ------------------------------------------------
             # Importante:
@@ -820,8 +848,6 @@ def _processar_loja(
             )
 
             continue
-
-        total_categorias += 1
 
         print(
             f"[INFO] Encontrados "
@@ -896,6 +922,7 @@ def _processar_loja(
 
             continue
 
+        total_categorias += 1
         print(
             f"[OK] Categoria '{cgid}' salva."
         )
@@ -934,9 +961,11 @@ def _processar_loja(
     )
 
     print(
-        f"[INFO] Categorias processadas: "
+        f"[INFO] Categorias gravadas: "
         f"{total_categorias}/{len(categorias)}"
     )
+    if total_categorias != len(categorias):
+        print("[AVISO] Coleta parcial: algumas categorias falharam.")
 
     print(
         f"[INFO] Produtos analisados: "
@@ -981,7 +1010,6 @@ def rodar(
     todos: bool = False,
 ) -> None:
 
-    _validar_coluna_imagem()
     playwright = sync_playwright().start()
 
     browser = None

@@ -58,9 +58,13 @@ def comparar_produtos(db: Session, termo: str) -> list[ComparacaoResponse]:
         # dois lojistas podem ter mercados com o mesmo nome exibido.
         lojas = agrupados[chave]["lojas"]
         if loja_id not in lojas:
-            lojas[loja_id] = {"nome": nome_loja, "preco": produto.preco}
+            lojas[loja_id] = {"nome": nome_loja, "preco": produto.preco,
+                               "imagem_url": produto.imagem_url,
+                               "imagens_urls": produto.imagens_urls or []}
         elif produto.preco < lojas[loja_id]["preco"]:
             lojas[loja_id]["preco"] = produto.preco
+            lojas[loja_id]["imagem_url"] = produto.imagem_url
+            lojas[loja_id]["imagens_urls"] = produto.imagens_urls or []
 
     resultados = []
     for dados in agrupados.values():
@@ -69,6 +73,9 @@ def comparar_produtos(db: Session, termo: str) -> list[ComparacaoResponse]:
             continue
 
         registros_lojas = list(lojas.values())
+        # Priorizamos a foto da oferta mais barata que disponha de imagens.
+        imagens_preferidas = next((r for r in sorted(registros_lojas, key=lambda r: r["preco"])
+                                  if r["imagem_url"]), None)
         precos = [registro["preco"] for registro in registros_lojas]
         menor_preco = min(precos)
         maior_preco = max(precos)
@@ -83,7 +90,8 @@ def comparar_produtos(db: Session, termo: str) -> list[ComparacaoResponse]:
         )
 
         precos_response = [
-            PrecoLojaResponse(loja=registro["nome"], preco=registro["preco"])
+            PrecoLojaResponse(loja=registro["nome"], preco=registro["preco"],
+                              imagemUrl=registro["imagem_url"], imagensUrls=registro["imagens_urls"])
             for registro in sorted(
                 registros_lojas,
                 key=lambda item: (item["preco"], item["nome"].casefold()),
@@ -92,6 +100,8 @@ def comparar_produtos(db: Session, termo: str) -> list[ComparacaoResponse]:
         resultados.append(
             ComparacaoResponse(
                 produto=dados["nome_original"],
+                imagemUrl=imagens_preferidas["imagem_url"] if imagens_preferidas else None,
+                imagensUrls=imagens_preferidas["imagens_urls"] if imagens_preferidas else [],
                 precos=precos_response,
                 menor_preco=menor_preco,
                 maior_preco=maior_preco,
