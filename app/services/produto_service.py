@@ -1,6 +1,6 @@
 """Equivalente Python de service/ProdutoService.java"""
 
-from sqlalchemy import select, or_, func
+from sqlalchemy import select, or_, and_, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.exceptions import (
@@ -54,6 +54,7 @@ def _consulta_base():
 
 
 def _filtrar_imagem(consulta, com_imagem: bool):
+    """Filtra produtos que possuem imagem principal."""
 
     if com_imagem:
         consulta = consulta.where(
@@ -62,6 +63,24 @@ def _filtrar_imagem(consulta, com_imagem: bool):
         )
 
     return consulta
+
+
+def _extrair_termos(texto: str) -> list[str]:
+    """Separa as palavras digitadas na pesquisa."""
+
+    return list(dict.fromkeys(texto.strip().lower().split()))
+
+
+def _criar_padrao(termo: str) -> str:
+    """Cria um padrao de pesquisa com caracteres especiais escapados."""
+
+    termo = (
+        termo.replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")
+    )
+
+    return f"%{termo}%"
 
 
 def cadastrar(
@@ -112,6 +131,7 @@ def listar_todos(
     offset: int = 0,
     com_imagem: bool = False,
 ) -> list[ProdutoResponse]:
+    """Lista produtos ativos com paginacao."""
 
     consulta = _consulta_base()
 
@@ -144,6 +164,7 @@ def listar_por_afiliado(
     offset: int = 0,
     com_imagem: bool = False,
 ) -> list[ProdutoResponse]:
+    """Lista produtos de um afiliado com paginacao."""
 
     consulta = (
         select(Produto)
@@ -186,6 +207,16 @@ def buscar(
     offset: int = 0,
     com_imagem: bool = False,
 ) -> list[ProdutoResponse]:
+    """
+    Busca produtos por nome ou tag.
+
+    Aceita multiplas palavras independentemente da ordem.
+
+    Exemplo:
+        arroz camil
+        camil arroz
+        arroz camil 5kg
+    """
 
     if not termo or not termo.strip():
         return listar_todos(
@@ -195,13 +226,29 @@ def buscar(
             com_imagem=com_imagem,
         )
 
-    padrao = f"%{termo.strip().lower()}%"
+    termos = _extrair_termos(termo)
+
+    filtros = []
+
+    for palavra in termos:
+
+        padrao = _criar_padrao(palavra)
+
+        filtros.append(
+            or_(
+                Produto.nome_produto.ilike(
+                    padrao,
+                    escape="\\",
+                ),
+                Produto.tags.ilike(
+                    padrao,
+                    escape="\\",
+                ),
+            )
+        )
 
     consulta = _consulta_base().where(
-        or_(
-            Produto.nome_produto.ilike(padrao),
-            Produto.tags.ilike(padrao),
-        )
+        and_(*filtros)
     )
 
     consulta = _filtrar_imagem(
@@ -233,18 +280,32 @@ def comparar(
     db: Session,
     nome: str,
 ) -> list[ProdutoResponse]:
+    """
+    Compara precos de produtos em diferentes supermercados.
+
+    Aceita multiplas palavras independentemente da ordem.
+    Ordena os resultados do menor para o maior preco.
+    """
 
     if not nome or not nome.strip():
         raise NegocioException(
             "Informe o nome do produto para comparar."
         )
 
-    padrao = f"%{nome.lower()}%"
+    termos = _extrair_termos(nome)
+
+    filtros = [
+        Produto.nome_produto.ilike(
+            _criar_padrao(palavra),
+            escape="\\",
+        )
+        for palavra in termos
+    ]
 
     consulta = (
         _consulta_base()
         .where(
-            Produto.nome_produto.ilike(padrao),
+            and_(*filtros)
         )
         .order_by(
             Produto.preco.asc(),
