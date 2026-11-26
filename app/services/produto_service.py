@@ -375,6 +375,25 @@ def atualizar(
 
     return ProdutoResponse.de(produto)
 
+def buscar_por_id(
+    db: Session,
+    produto_id: int,
+) -> ProdutoResponse:
+
+    consulta = _consulta_base().where(
+        Produto.id == produto_id
+    )
+
+    produto = db.scalars(
+        consulta
+    ).unique().first()
+
+    if produto is None:
+        raise NaoEncontradoException(
+            "Produto nao encontrado."
+        )
+
+    return ProdutoResponse.de(produto)
 
 def deletar(
     db: Session,

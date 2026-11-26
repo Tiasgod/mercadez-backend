@@ -87,6 +87,23 @@ def comparar(
         nome,
     )
 
+@router.get(
+    "/{produto_id}",
+    response_model=ProdutoResponse,
+)
+def buscar_por_id(
+    produto_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Retorna um produto especifico pelo ID.
+    """
+
+    return produto_service.buscar_por_id(
+        db,
+        produto_id,
+    )
+
 
 @router.post(
     "",

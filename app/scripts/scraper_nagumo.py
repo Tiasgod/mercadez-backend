@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import time
 from decimal import Decimal
 from urllib.parse import urlencode, urljoin, urlparse
@@ -526,6 +527,26 @@ def _carregar_produtos_da_loja(
 # IMAGENS DISPONIVEIS NO JSON DO CATALOGO
 # ============================================================
 
+def normalizar_url_imagem(valor: str) -> str | None:
+    if not isinstance(valor, str) or not valor.strip():
+        return None
+    url = urljoin(BASE + "/", valor.strip())
+    url = re.sub(r"^https?://www\.nagumo\.com\.br/[^?]*?/(?=https://ngostpubprd001\.blob\.core\.windows\.net/)", "", url, flags=re.I)
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return None
+    if parsed.scheme not in ("http", "https") or not parsed.hostname or re.search(r"https?://", parsed.path, re.I):
+        return None
+    if len(url) > 2048 or any(c.isspace() for c in url):
+        return None
+    if not re.search(r"\.(?:webp|png|jpe?g|gif|avif)(?:$)", parsed.path, re.I):
+        return None
+    if parsed.path.rsplit("/", 1)[-1].lower() in {"meunagumo.png", "noimage.png", "placeholder.png"}:
+        return None
+    return url
+
+
 def _extrair_imagens(produto_nagumo: dict) -> list[str]:
     """Coleta URLs de imagem presentes no produto, sem downloads adicionais.
 
@@ -542,11 +563,8 @@ def _extrair_imagens(produto_nagumo: dict) -> list[str]:
     def guardar(valor):
         if not isinstance(valor, str) or not valor.strip():
             return
-        url = urljoin(BASE + "/", valor.strip())
-        parsed = urlparse(url)
-        if parsed.scheme not in ("https", "http") or not parsed.netloc:
-            return
-        if len(url) > 2048 or url in vistos:
+        url = normalizar_url_imagem(valor)
+        if not url or url in vistos:
             return
         vistos.add(url)
         encontrados.append(url)
