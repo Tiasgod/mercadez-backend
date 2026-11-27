@@ -1,11 +1,10 @@
 name: Mercadez - Nagumo Automatico V2
 
-on:
+"on":
   schedule:
     - cron: "44 1,13 * * *"
+  workflow_dispatch: {}
 
-  workflow_dispatch:
-  
 permissions:
   contents: read
 
