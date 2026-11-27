@@ -6,8 +6,8 @@ import json
 import re
 import time
 
-from datetime import datetime, timezone
 from collections import Counter
+from datetime import datetime, timezone
 from decimal import Decimal
 from urllib.parse import urlencode, urljoin, urlparse
 
@@ -30,6 +30,8 @@ INTERVALO_ENTRE_REQUISICOES_SEGUNDOS = 3.0
 INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS = 3.0
 
 TAMANHO_PAGINA = 40
+
+# Limite conservador baseado nas recusas anteriores.
 LIMITE_RESULTADOS = 1000
 
 LATITUDE = "-23.5325875"
@@ -41,21 +43,66 @@ LONGITUDE = "-46.335124"
 # ============================================================
 
 LOJAS = [
-    {"nome": "Nagumo Poa", "codigo": "22"},
-    {"nome": "Nagumo Poa_Kemel", "codigo": "45"},
-    {"nome": "Nagumo_Suzano_Dona_Benta", "codigo": "23"},
-    {"nome": "Nagumo Suzano", "codigo": "27"},
-    {"nome": "Nagumo Itaqua", "codigo": "30"},
-    {"nome": "Nagumo_Itaqua_Vila_Zeferina", "codigo": "39"},
-    {"nome": "Nagumo_Mogi_Alto_Ipiranga", "codigo": "52"},
-    {"nome": "Nagumo_Guarulhos_Merc_Bonsucesso", "codigo": "41"},
-    {"nome": "Nagumo_Guarulhos_Cumbica", "codigo": "42"},
-    {"nome": "Nagumo_Guarulhos_Shopping_Pimentas", "codigo": "49"},
-    {"nome": "Nagumo_Guarulhos_Continental", "codigo": "51"},
-    {"nome": "Nagumo_Guarulhos_Bonsucesso", "codigo": "55"},
-    {"nome": "Nagumo_Guarulhos_Elenco", "codigo": "56"},
-    {"nome": "Nagumo_Guarulhos_Anel_Viario", "codigo": "57"},
-    {"nome": "Nagumo_Guarulhos_Alvorada", "codigo": "61"},
+    {
+        "nome": "Nagumo Poa",
+        "codigo": "22",
+    },
+    {
+        "nome": "Nagumo Poa_Kemel",
+        "codigo": "45",
+    },
+    {
+        "nome": "Nagumo_Suzano_Dona_Benta",
+        "codigo": "23",
+    },
+    {
+        "nome": "Nagumo Suzano",
+        "codigo": "27",
+    },
+    {
+        "nome": "Nagumo Itaqua",
+        "codigo": "30",
+    },
+    {
+        "nome": "Nagumo_Itaqua_Vila_Zeferina",
+        "codigo": "39",
+    },
+    {
+        "nome": "Nagumo_Mogi_Alto_Ipiranga",
+        "codigo": "52",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Merc_Bonsucesso",
+        "codigo": "41",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Cumbica",
+        "codigo": "42",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Shopping_Pimentas",
+        "codigo": "49",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Continental",
+        "codigo": "51",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Bonsucesso",
+        "codigo": "55",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Elenco",
+        "codigo": "56",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Anel_Viario",
+        "codigo": "57",
+    },
+    {
+        "nome": "Nagumo_Guarulhos_Alvorada",
+        "codigo": "61",
+    },
 ]
 
 
@@ -93,11 +140,11 @@ class AcessoRecusado(RuntimeError):
 
         super().__init__(
             f"HTTP {status} em {etapa}. "
-            "Execucao interrompida."
+            "Coleta interrompida."
         )
 
 
-class LimitePaginacaoAtingido(RuntimeError):
+class LimitePaginacaoAtingido(Exception):
     pass
 
 
@@ -129,18 +176,20 @@ def verificar_acesso(
     status,
     etapa,
     headers=None,
+    duracao=None,
 ):
 
     headers = headers or {}
 
     headers_seguros = {
-        chave: str(headers[chave])[:160]
+        chave: str(headers[chave])[:200]
         for chave in (
             "content-type",
             "retry-after",
             "x-request-id",
             "cf-ray",
             "cf-mitigated",
+            "server",
         )
         if chave in headers
         and headers[chave] is not None
@@ -151,6 +200,7 @@ def verificar_acesso(
         etapa=etapa,
         status=status,
         headers=headers_seguros,
+        duracao_segundos=duracao,
     )
 
     if status in (403, 429):
@@ -160,10 +210,10 @@ def verificar_acesso(
             etapa,
         )
 
-    if status >= 400:
+    if status >= 400 or status == 0:
 
         raise RuntimeError(
-            f"HTTP {status} em {etapa}"
+            f"Falha HTTP {status} em {etapa}."
         )
 
 
@@ -185,7 +235,7 @@ def ler_checkpoint(
                 concluida
             FROM nagumo_coleta_checkpoint
             WHERE loja_codigo = :codigo
-            AND categoria = :categoria
+              AND categoria = :categoria
         """),
         {
             "codigo": codigo,
@@ -197,9 +247,15 @@ def ler_checkpoint(
 
         return 0, set(), False
 
+    assinaturas = resultado[1]
+
+    if isinstance(assinaturas, str):
+
+        assinaturas = json.loads(assinaturas)
+
     return (
-        resultado[0],
-        set(json.loads(resultado[1])),
+        int(resultado[0]),
+        set(assinaturas or []),
         bool(resultado[2]),
     )
 
@@ -237,13 +293,13 @@ def salvar_checkpoint(
             )
             DO UPDATE SET
                 proxima_posicao =
-                    excluded.proxima_posicao,
+                    EXCLUDED.proxima_posicao,
                 assinaturas =
-                    excluded.assinaturas,
+                    EXCLUDED.assinaturas,
                 concluida =
-                    excluded.concluida,
+                    EXCLUDED.concluida,
                 atualizado_em =
-                    excluded.atualizado_em
+                    EXCLUDED.atualizado_em
         """),
         {
             "codigo": codigo,
@@ -270,8 +326,8 @@ def limpar_checkpoints_concluidos(
             text("""
                 DELETE FROM nagumo_coleta_checkpoint
                 WHERE loja_codigo = :codigo
-                AND categoria = :categoria
-                AND concluida = true
+                  AND categoria = :categoria
+                  AND concluida = true
             """),
             {
                 "codigo": codigo,
@@ -283,7 +339,7 @@ def limpar_checkpoints_concluidos(
 
 
 # ============================================================
-# IDENTIFICACAO DOS PRODUTOS
+# IDENTIFICACAO DE PRODUTOS
 # ============================================================
 
 def chave_produto(nome):
@@ -308,7 +364,9 @@ def assinatura_pagina(produtos):
 
         if identificador:
 
-            chave = "id:" + str(identificador)
+            chave = (
+                "id:" + str(identificador)
+            )
 
         else:
 
@@ -330,7 +388,7 @@ def assinatura_pagina(produtos):
     )
 
     return hashlib.sha256(
-        conteudo.encode()
+        conteudo.encode("utf-8")
     ).hexdigest()
 
 
@@ -350,7 +408,7 @@ def criar_navegador(playwright):
         extra_http_headers={
             "Accept-Language": (
                 "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-            )
+            ),
         },
     )
 
@@ -362,6 +420,8 @@ def criar_navegador(playwright):
 # ============================================================
 
 def abrir_nagumo(page):
+
+    inicio = time.monotonic()
 
     resposta = page.goto(
         BASE,
@@ -379,6 +439,10 @@ def abrir_nagumo(page):
         resposta.status,
         "pagina inicial",
         resposta.headers,
+        round(
+            time.monotonic() - inicio,
+            2,
+        ),
     )
 
     print(
@@ -391,14 +455,13 @@ def abrir_nagumo(page):
 # SELECIONAR SUPERMERCADO
 # ============================================================
 
-def selecionar_loja(
-    page,
-    codigo,
-):
+def selecionar_loja(page, codigo):
 
     print(
         f"[INFO] Selecionando loja {codigo}..."
     )
+
+    inicio = time.monotonic()
 
     resultado = page.evaluate(
         """
@@ -413,7 +476,8 @@ def selecionar_loja(
 
             const url =
                 "/on/demandware.store/" +
-                "Sites-Nagumo-Site/pt_BR/" +
+                "Sites-Nagumo-Site/" +
+                "pt_BR/" +
                 "Stores-SelectStore?" +
                 parametros.toString();
 
@@ -463,19 +527,20 @@ def selecionar_loja(
         },
     )
 
-    status = resultado["status"]
-
     verificar_acesso(
-        status,
+        resultado["status"],
         f"selecao da loja {codigo}",
         resultado.get("headers"),
+        round(
+            time.monotonic() - inicio,
+            2,
+        ),
     )
 
-    if status != 200:
+    if resultado["status"] != 200:
 
         raise RuntimeError(
-            f"Falha na selecao da loja "
-            f"{codigo}: HTTP {status}"
+            f"Falha na selecao da loja {codigo}."
         )
 
     try:
@@ -505,7 +570,7 @@ def selecionar_loja(
 
 
 # ============================================================
-# TOTAL DE RESULTADOS
+# IDENTIFICAR TOTAL DE RESULTADOS
 # ============================================================
 
 def total_informado(dados):
@@ -566,8 +631,8 @@ def total_informado(dados):
 
 def verificar_limite_posicao(
     inicio,
-    codigo=None,
-    categoria=None,
+    codigo,
+    categoria,
 ):
 
     if inicio < 0:
@@ -588,11 +653,9 @@ def verificar_limite_posicao(
             nova_recusa_http=False,
         )
 
-        raise LimitePaginacaoAtingido(
-            f"Limite interno atingido na "
-            f"posicao {inicio}. "
-            "Checkpoint preservado."
-        )
+        return False
+
+    return True
 
 
 # ============================================================
@@ -606,11 +669,15 @@ def buscar_pagina(
     codigo,
 ):
 
-    verificar_limite_posicao(
+    if not verificar_limite_posicao(
         inicio,
         codigo,
         categoria,
-    )
+    ):
+
+        raise LimitePaginacaoAtingido(
+            f"Limite de paginacao: {inicio}"
+        )
 
     tamanho = min(
         TAMANHO_PAGINA,
@@ -651,8 +718,9 @@ def buscar_pagina(
 
     try:
 
-        duracao = (
-            time.monotonic() - inicio_http
+        duracao = round(
+            time.monotonic() - inicio_http,
+            2,
         )
 
         verificar_acesso(
@@ -663,11 +731,7 @@ def buscar_pagina(
                 f"posicao {inicio}"
             ),
             resposta.headers,
-        )
-
-        print(
-            f"[INFO] Tempo da resposta: "
-            f"{duracao:.2f}s"
+            duracao,
         )
 
         try:
@@ -693,8 +757,8 @@ def buscar_pagina(
         if (
             not isinstance(produtos, list)
             or any(
-                not isinstance(p, dict)
-                for p in produtos
+                not isinstance(produto, dict)
+                for produto in produtos
             )
         ):
 
@@ -706,21 +770,7 @@ def buscar_pagina(
 
             raise RuntimeError(
                 "Pagina retornou mais produtos "
-                "que o solicitado."
-            )
-
-        if produtos and not any(
-            isinstance(
-                p.get("productName"),
-                str,
-            )
-            and p["productName"].strip()
-            for p in produtos
-        ):
-
-            raise RuntimeError(
-                "Pagina sem identificacao "
-                "dos produtos."
+                "do que o solicitado."
             )
 
         total = total_informado(dados)
@@ -747,10 +797,7 @@ def buscar_pagina(
 # CARREGAR PRODUTOS EXISTENTES
 # ============================================================
 
-def carregar_produtos(
-    db,
-    loja_id,
-):
+def carregar_produtos(db, loja_id):
 
     print(
         "[INFO] Carregando produtos existentes "
@@ -800,8 +847,8 @@ def carregar_produtos(
         )
 
     print(
-        f"[OK] {len(mapa)} produtos "
-        "carregados em memoria."
+        f"[OK] {len(mapa)} chaves "
+        "carregadas em memoria."
     )
 
     return mapa
@@ -887,7 +934,7 @@ def normalizar_url_imagem(valor):
 
 
 # ============================================================
-# EXTRAIR IMAGENS DO PRODUTO
+# EXTRAIR IMAGENS
 # ============================================================
 
 def extrair_imagens(produto):
@@ -936,7 +983,6 @@ def extrair_imagens(produto):
             return
 
         vistos.add(url)
-
         imagens.append(url)
 
     def percorrer(
@@ -1095,7 +1141,6 @@ def salvar_produto(
         )
 
         db.add(produto)
-
         db.flush()
 
         db.add(
@@ -1110,7 +1155,7 @@ def salvar_produto(
         return "novo"
 
     # --------------------------------------------------------
-    # CATEGORIA
+    # ATUALIZAR CATEGORIA
     # --------------------------------------------------------
 
     if categoria and not produto.tags:
@@ -1224,28 +1269,41 @@ def processar_categoria(
             "neste ciclo."
         )
 
-        return contagem
+        return contagem, "concluida"
 
     print(
         f"[INFO] Checkpoint encontrado: "
         f"posicao {inicio}"
     )
 
-    # --------------------------------------------------------
-    # VALIDACAO ANTES DE NOVAS CONSULTAS
-    # --------------------------------------------------------
-
-    verificar_limite_posicao(
-        inicio,
-        codigo,
-        categoria,
-    )
-
-    # --------------------------------------------------------
-    # PAGINACAO
-    # --------------------------------------------------------
-
     while True:
+
+        # ----------------------------------------------------
+        # LIMITE DE PAGINACAO
+        # ----------------------------------------------------
+
+        if not verificar_limite_posicao(
+            inicio,
+            codigo,
+            categoria,
+        ):
+
+            print(
+                f"[AVISO] Categoria {categoria}: "
+                f"limite de {LIMITE_RESULTADOS} "
+                "resultados atingido."
+            )
+
+            print(
+                "[INFO] Checkpoint e produtos "
+                "preservados."
+            )
+
+            return contagem, "limite"
+
+        # ----------------------------------------------------
+        # CONSULTAR PAGINA
+        # ----------------------------------------------------
 
         produtos, total, tamanho = buscar_pagina(
             context,
@@ -1260,6 +1318,10 @@ def processar_categoria(
             else None
         )
 
+        # ----------------------------------------------------
+        # DETECTAR PAGINA REPETIDA
+        # ----------------------------------------------------
+
         if (
             assinatura
             and assinatura in assinaturas
@@ -1272,10 +1334,12 @@ def processar_categoria(
                 posicao=inicio,
             )
 
-            raise RuntimeError(
-                f"Pagina repetida em {categoria}, "
-                f"posicao {inicio}."
+            print(
+                "[AVISO] Pagina repetida detectada. "
+                "Paginacao interrompida."
             )
+
+            return contagem, "pagina_repetida"
 
         proxima = inicio + len(produtos)
 
@@ -1332,7 +1396,7 @@ def processar_categoria(
             concluida = len(produtos) < tamanho
 
         # ----------------------------------------------------
-        # GRAVAR PRODUTOS E CHECKPOINT
+        # GRAVAR LOTE E CHECKPOINT
         # ----------------------------------------------------
 
         salvar_checkpoint(
@@ -1357,28 +1421,23 @@ def processar_categoria(
             flush=True,
         )
 
+        # ----------------------------------------------------
+        # FINALIZAR CATEGORIA
+        # ----------------------------------------------------
+
         if concluida:
 
             print(
-                f"[OK] Categoria {categoria} "
-                "concluida."
+                f"[OK] Categoria {categoria} concluida."
             )
 
-            break
+            return contagem, "concluida"
 
         inicio = proxima
-
-        verificar_limite_posicao(
-            inicio,
-            codigo,
-            categoria,
-        )
 
         time.sleep(
             INTERVALO_ENTRE_REQUISICOES_SEGUNDOS
         )
-
-    return contagem
 
 
 # ============================================================
@@ -1421,7 +1480,6 @@ def processar_loja(
         )
 
         db.add(loja)
-
         db.flush()
 
         print(
@@ -1443,6 +1501,8 @@ def processar_loja(
 
     contagem = Counter()
 
+    categorias_concluidas = 0
+
     inicio_loja = time.monotonic()
 
     for indice, categoria in enumerate(
@@ -1451,13 +1511,14 @@ def processar_loja(
     ):
 
         print()
+
         print(
             f"[INFO] Categoria "
             f"{indice}/{len(categorias)}: "
             f"{categoria}"
         )
 
-        resultado = processar_categoria(
+        resultado, estado = processar_categoria(
             db,
             context,
             loja,
@@ -1467,6 +1528,27 @@ def processar_loja(
         )
 
         contagem.update(resultado)
+
+        if estado == "concluida":
+
+            categorias_concluidas += 1
+
+        else:
+
+            # Nao confundir limite de cobertura
+            # com uma categoria completa.
+            registrar_evento(
+                "cobertura_limitada",
+                loja_codigo=codigo,
+                categoria=categoria,
+                motivo=estado,
+                categorias_concluidas=(
+                    categorias_concluidas
+                ),
+                total_categorias=len(categorias),
+            )
+
+            return contagem, False
 
         time.sleep(
             INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS
@@ -1478,14 +1560,17 @@ def processar_loja(
         categorias,
     )
 
-    duracao = (
-        time.monotonic() - inicio_loja
+    duracao = round(
+        time.monotonic() - inicio_loja,
+        2,
     )
 
     print()
     print("=" * 70)
+    print(f"[OK] Loja {codigo} finalizada.")
     print(
-        f"[OK] Loja {codigo} finalizada."
+        f"[INFO] Categorias concluidas: "
+        f"{categorias_concluidas}/{len(categorias)}"
     )
     print(
         f"[INFO] Produtos novos: "
@@ -1504,21 +1589,18 @@ def processar_loja(
         f"{contagem['ignorado']}"
     )
     print(
-        f"[INFO] Duracao: {duracao:.2f}s"
+        f"[INFO] Duracao: {duracao}s"
     )
     print("=" * 70)
 
-    return contagem
+    return contagem, True
 
 
 # ============================================================
 # EXECUCAO PRINCIPAL
 # ============================================================
 
-def rodar(
-    lojas,
-    categorias,
-):
+def rodar(lojas, categorias):
 
     db = None
     browser = None
@@ -1529,6 +1611,7 @@ def rodar(
     contagem_geral = Counter()
 
     lojas_concluidas = 0
+    cobertura_completa = True
 
     try:
 
@@ -1581,7 +1664,7 @@ def rodar(
                         flush=True,
                     )
 
-                    contagem = processar_loja(
+                    resultado, completa = processar_loja(
                         db,
                         page,
                         context,
@@ -1591,8 +1674,14 @@ def rodar(
                     )
 
                     contagem_geral.update(
-                        contagem
+                        resultado
                     )
+
+                    if not completa:
+
+                        cobertura_completa = False
+
+                        break
 
                     lojas_concluidas += 1
 
@@ -1612,37 +1701,58 @@ def rodar(
 
         print()
         print("=" * 70)
-        print("SCRAPER FINALIZADO")
+
+        if cobertura_completa:
+
+            print(
+                "SCRAPER FINALIZADO"
+            )
+
+        else:
+
+            print(
+                "SCRAPER ENCERRADO COM "
+                "COBERTURA LIMITADA"
+            )
+
         print("=" * 70)
 
         print(
-            f"[OK] Lojas concluidas: "
+            f"[INFO] Lojas concluidas: "
             f"{lojas_concluidas}/{len(lojas)}"
         )
 
         print(
-            f"[OK] Produtos analisados: "
+            f"[INFO] Produtos analisados: "
             f"{sum(contagem_geral.values())}"
         )
 
         print(
-            f"[OK] Produtos novos: "
+            f"[INFO] Produtos novos: "
             f"{contagem_geral['novo']}"
         )
 
         print(
-            f"[OK] Precos alterados: "
+            f"[INFO] Precos alterados: "
             f"{contagem_geral['preco_alterado']}"
         )
 
         print(
-            f"[OK] Sem alteracao: "
+            f"[INFO] Sem alteracao: "
             f"{contagem_geral['sem_alteracao']}"
         )
 
         print(
-            f"[OK] Ignorados: "
+            f"[INFO] Ignorados: "
             f"{contagem_geral['ignorado']}"
+        )
+
+        registrar_evento(
+            "resultado_coleta",
+            cobertura_completa=cobertura_completa,
+            lojas_concluidas=lojas_concluidas,
+            total_lojas=len(lojas),
+            produtos=dict(contagem_geral),
         )
 
     except Exception:
@@ -1659,15 +1769,14 @@ def rodar(
 
             db.close()
 
-        duracao = (
-            time.monotonic() - inicio_execucao
-        )
-
         registrar_evento(
             "fim_execucao",
             lojas_concluidas=lojas_concluidas,
             total_lojas=len(lojas),
-            duracao_segundos=round(duracao, 2),
+            duracao_segundos=round(
+                time.monotonic() - inicio_execucao,
+                2,
+            ),
         )
 
 
@@ -1783,27 +1892,6 @@ if __name__ == "__main__":
 
         main()
 
-    except LimitePaginacaoAtingido as erro:
-
-        print(
-            f"[AVISO] {erro}",
-            flush=True,
-        )
-
-        print(
-            "[INFO] Nenhuma nova recusa HTTP "
-            "foi registrada neste limite.",
-            flush=True,
-        )
-
-        print(
-            "[INFO] Produtos e checkpoints "
-            "preservados.",
-            flush=True,
-        )
-
-        raise SystemExit(2)
-
     except AcessoRecusado as erro:
 
         registrar_evento(
@@ -1814,6 +1902,11 @@ if __name__ == "__main__":
 
         print(
             f"[ERRO HTTP] {erro}",
+            flush=True,
+        )
+
+        print(
+            "[INFO] Lotes anteriores preservados.",
             flush=True,
         )
 
