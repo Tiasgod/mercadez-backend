@@ -1,4 +1,4 @@
-name: Mercadez - Nagumo Automatico V3
+name: Mercadez - Nagumo Simplificado
 
 "on":
   schedule:
@@ -13,97 +13,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-
-  verificar-agendamento:
-    name: Verificar agendamento
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Informacoes da execucao
-        run: |
-          echo "=========================================="
-          echo "MERCADEZ - SCRAPER NAGUMO V3"
-          echo "=========================================="
-          echo "Evento: ${{ github.event_name }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Horario UTC:"
-          date -u
-          echo "Horario de Brasilia:"
-          TZ=America/Sao_Paulo date
-          echo "=========================================="
-
   atualizar-catalogo:
-    name: ${{ matrix.loja.nome }}
-
-    needs: verificar-agendamento
-
+    name: Coleta sequencial Nagumo
     if: ${{ vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
-
     runs-on: ubuntu-latest
-
     timeout-minutes: 350
 
-    strategy:
-      fail-fast: true
-      max-parallel: 1
-
-      matrix:
-        loja:
-
-          # UNIDADES AINDA NAO COLETADAS
-
-          - nome: "Nagumo_Guarulhos_Cumbica"
-            codigo: "42"
-
-          - nome: "Nagumo_Guarulhos_Shopping_Pimentas"
-            codigo: "49"
-
-          - nome: "Nagumo_Guarulhos_Continental"
-            codigo: "51"
-
-          - nome: "Nagumo_Guarulhos_Elenco"
-            codigo: "56"
-
-          - nome: "Nagumo_Guarulhos_Anel_Viario"
-            codigo: "57"
-
-          - nome: "Nagumo_Guarulhos_Alvorada"
-            codigo: "61"
-
-          # UNIDADES COM MENOS PRODUTOS
-
-          - nome: "Nagumo_Guarulhos_Merc_Bonsucesso"
-            codigo: "41"
-
-          - nome: "Nagumo_Guarulhos_Bonsucesso"
-            codigo: "55"
-
-          - nome: "Nagumo_Itaqua_Vila_Zeferina"
-            codigo: "39"
-
-          - nome: "Nagumo Itaqua"
-            codigo: "30"
-
-          - nome: "Nagumo Suzano"
-            codigo: "27"
-
-          # UNIDADES COM CATALOGOS MAIORES
-
-          - nome: "Nagumo_Suzano_Dona_Benta"
-            codigo: "23"
-
-          - nome: "Nagumo_Mogi_Alto_Ipiranga"
-            codigo: "52"
-
-          - nome: "Nagumo Poa_Kemel"
-            codigo: "45"
-
-          - nome: "Nagumo Poa"
-            codigo: "22"
+    env:
+      PYTHONUNBUFFERED: "1"
 
     steps:
-
       - name: Baixar repositorio
         uses: actions/checkout@v6
 
@@ -111,233 +30,51 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-          cache: "pip"
+          cache: pip
 
       - name: Instalar dependencias
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install playwright
+          python -m pip install -r requirements.txt
+          python -m pip install playwright
 
-      - name: Instalar Chromium
-        run: |
-          python -m playwright install --with-deps chromium
-
-      - name: Preparar diagnostico
-        shell: bash
-        run: |
-          mkdir -p diagnostico
-
-          {
-            echo "=========================================="
-            echo "DIAGNOSTICO DO AMBIENTE"
-            echo "=========================================="
-            echo "Sistema operacional:"
-            uname -a
-
-            echo "Versao do Python:"
-            python --version
-
-            echo "Versao do Playwright:"
-            python -m playwright --version
-
-            echo "Commit utilizado:"
-            git rev-parse HEAD
-
-            echo "Memoria disponivel:"
-            free -h
-
-            echo "Espaco em disco:"
-            df -h .
-
-            echo "Horario UTC:"
-            date -u
-
-            echo "Horario de Brasilia:"
-            TZ=America/Sao_Paulo date
-
-          } | tee diagnostico/ambiente.txt
-
-      - name: Executar scraper Nagumo
-        id: scraper
-        shell: bash
-
+      - name: Verificar pausa registrada no Neon
+        id: pausa
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONUNBUFFERED: "1"
-          LOJA_NOME: ${{ matrix.loja.nome }}
-          LOJA_CODIGO: ${{ matrix.loja.codigo }}
-
         run: |
-          set -o pipefail
+          python - <<'PY'
+          import os
+          from sqlalchemy import text
+          from app.core.database import SessionLocal
 
-          INICIO=$(date +%s)
+          with SessionLocal() as db:
+              estado = db.execute(text(
+                  "SELECT status_http, etapa FROM nagumo_coleta_pausa WHERE id = 1"
+              )).first()
 
-          echo "=========================================="
-          echo "INICIANDO COLETA MERCADEZ V3"
-          echo "=========================================="
-          echo "Loja: $LOJA_NOME"
-          echo "Codigo: $LOJA_CODIGO"
-          echo "Inicio: $(date -u)"
-          echo "=========================================="
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"ativa={'true' if estado else 'false'}\n")
 
-          set +e
+          if estado:
+              print(f"Coleta suspensa: HTTP {estado[0]} em {estado[1]}.")
+              print("Nenhuma nova consulta ao Nagumo sera realizada.")
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                  summary.write("## Coleta suspensa\n\nExiste uma recusa anterior registrada no Neon.\n")
+          else:
+              print("Nenhuma pausa registrada.")
+          PY
 
-          python -m app.scripts.scraper_nagumo \
-            --loja "$LOJA_NOME" \
-            --loja-codigo "$LOJA_CODIGO" \
-            --todos \
-            2>&1 | tee diagnostico/scraper.log
+      - name: Instalar Chromium
+        if: steps.pausa.outputs.ativa == 'false'
+        run: python -m playwright install --with-deps chromium
 
-          RESULTADOS=("${PIPESTATUS[@]}")
-          STATUS=${RESULTADOS[0]}
-          STATUS_LOG=${RESULTADOS[1]}
-
-          set -e
-
-          if [ "$STATUS" -eq 0 ] && [ "$STATUS_LOG" -ne 0 ]; then
-            STATUS=$STATUS_LOG
-          fi
-
-          FIM=$(date +%s)
-          DURACAO=$((FIM - INICIO))
-
-          echo "exit_code=$STATUS" >> "$GITHUB_OUTPUT"
-          echo "duracao=$DURACAO" >> "$GITHUB_OUTPUT"
-
-          echo "=========================================="
-          echo "RESULTADO DA EXECUCAO"
-          echo "=========================================="
-          echo "Codigo de saida: $STATUS"
-          echo "Duracao: $DURACAO segundos"
-          echo "=========================================="
-
-          exit "$STATUS"
-
-      - name: Analisar resultado da coleta
-        if: always()
-        shell: bash
-
+      - name: Executar scraper Nagumo
+        if: steps.pausa.outputs.ativa == 'false'
         env:
-          LOJA_NOME: ${{ matrix.loja.nome }}
-          LOJA_CODIGO: ${{ matrix.loja.codigo }}
-          EXIT_CODE: ${{ steps.scraper.outputs.exit_code }}
-          DURACAO: ${{ steps.scraper.outputs.duracao }}
-
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p diagnostico
-
-          LOG="diagnostico/scraper.log"
-
-          {
-            echo "=========================================="
-            echo "MERCADEZ - RELATORIO DE DIAGNOSTICO"
-            echo "=========================================="
-            echo "Loja: $LOJA_NOME"
-            echo "Codigo: $LOJA_CODIGO"
-            echo "Duracao: ${DURACAO:-Nao disponivel}"
-            echo "Codigo de saida: ${EXIT_CODE:-Nao disponivel}"
-
-            if [ ! -f "$LOG" ]; then
-
-              echo "RESULTADO: SCRAPER NAO INICIADO"
-              echo "Verifique as etapas de instalacao."
-
-            else
-
-              HTTP_200=$(grep -Ec '"status":[[:space:]]*200' "$LOG" || true)
-              HTTP_403=$(grep -Ec '"status":[[:space:]]*403' "$LOG" || true)
-              HTTP_429=$(grep -Ec '"status":[[:space:]]*429' "$LOG" || true)
-              HTTP_500=$(grep -Ec '"status":[[:space:]]*5[0-9][0-9]' "$LOG" || true)
-              LOTES=$(grep -c "Lote gravado" "$LOG" || true)
-
-              echo "------------------------------------------"
-              echo "METRICAS"
-              echo "------------------------------------------"
-              echo "Respostas HTTP 200 registradas: $HTTP_200"
-              echo "Respostas HTTP 403 registradas: $HTTP_403"
-              echo "Respostas HTTP 429 registradas: $HTTP_429"
-              echo "Respostas HTTP 5xx registradas: $HTTP_500"
-              echo "Lotes gravados: $LOTES"
-
-              echo "------------------------------------------"
-              echo "CLASSIFICACAO DO RESULTADO"
-              echo "------------------------------------------"
-
-              if grep -qi "bloqueada administrativamente" "$LOG"; then
-
-                echo "RESULTADO: PAUSA ADMINISTRATIVA"
-                echo "Existe uma recusa anterior registrada no Neon."
-                echo "Nenhuma nova consulta deve ser iniciada."
-
-              elif [ "$HTTP_403" -gt 0 ]; then
-
-                echo "RESULTADO: NOVO HTTP 403"
-                echo "O servidor recusou uma requisicao."
-                echo "Possiveis causas:"
-                echo "- Restricao de acesso automatizado"
-                echo "- Restricao de paginacao"
-                echo "- Restricao de seguranca"
-                echo "- Problema de permissao ou sessao"
-                echo "Causa exata ainda nao confirmada."
-
-              elif [ "$HTTP_429" -gt 0 ]; then
-
-                echo "RESULTADO: HTTP 429"
-                echo "Servidor informou excesso de requisicoes."
-                echo "A coleta deve permanecer suspensa."
-
-              elif [ "$HTTP_500" -gt 0 ]; then
-
-                echo "RESULTADO: ERRO DO SERVIDOR REMOTO"
-
-              elif grep -Eqi "TimeoutError|timed out|timeout" "$LOG"; then
-
-                echo "RESULTADO: POSSIVEL TIMEOUT"
-
-              elif grep -Eqi "ConnectionError|ERR_CONNECTION|connection refused|connection reset" "$LOG"; then
-
-                echo "RESULTADO: POSSIVEL ERRO DE CONEXAO"
-
-              elif [ "$EXIT_CODE" = "0" ]; then
-
-                echo "RESULTADO: PROCESSO ENCERRADO COM SUCESSO"
-                echo "Verifique os checkpoints para confirmar a cobertura."
-
-              else
-
-                echo "RESULTADO: ERRO NAO CLASSIFICADO"
-
-              fi
-
-              echo "------------------------------------------"
-              echo "ULTIMOS EVENTOS HTTP"
-              echo "------------------------------------------"
-
-              grep '"evento": "http"' "$LOG" | tail -n 10 || true
-
-              echo "=========================================="
-
-            fi
-
-          } | tee diagnostico/relatorio.txt
-
-          {
-            echo "## Mercadez - Diagnostico da coleta"
-            echo ""
-            echo '```text'
-            cat diagnostico/relatorio.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Salvar relatorio de diagnostico
-        if: always()
-        uses: actions/upload-artifact@v4
-
-        with:
-          name: diagnostico-nagumo-${{ matrix.loja.codigo }}
-          path: |
-            diagnostico/ambiente.txt
-            diagnostico/relatorio.txt
-          retention-days: 7
-          if-no-files-found: warn
+          echo "Commit: $GITHUB_SHA"
+          python --version
+          python -m playwright --version
+          TZ=America/Sao_Paulo date
+          python -m app.scripts.scraper_nagumo --todas-lojas --todos
