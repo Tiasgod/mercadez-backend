@@ -19,7 +19,7 @@ concurrency:
 jobs:
   atualizar-catalogo:
     name: Coleta sequencial Nagumo
-    if: ${{ inputs.acesso_confirmado && vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
+    if: ${{ inputs.acesso_confirmado }}
     runs-on: ubuntu-latest
     timeout-minutes: 350
     env:
