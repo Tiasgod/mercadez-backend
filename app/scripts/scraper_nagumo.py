@@ -40,6 +40,8 @@ INTERVALO_RETRY_LOJA_SEGUNDOS = 3.0
 
 TAMANHO_PAGINA = 40
 MAX_PAGINAS_CATEGORIA = 1500
+# Teto conservador baseado na recusa observada; nao e autorizacao de acesso.
+LIMITE_RESULTADOS = 1000
 
 LATITUDE = "-23.5325875"
 LONGITUDE = "-46.335124"
@@ -469,19 +471,51 @@ def _extrair_produtos_da_pagina(resposta_texto: str) -> list[dict]:
     return produtos
 
 
+class PaginaCatalogo(list):
+    def __init__(self, produtos, total=None):
+        super().__init__(produtos)
+        self.total = total
+
+
+def _total_informado(dados):
+    # Somente campos explicitamente associados a total de resultados.
+    valores = []
+    for objeto in (dados, dados.get("pagination"), dados.get("productSearch")):
+        if not isinstance(objeto, dict):
+            continue
+        for chave in ("total", "totalCount", "totalResults", "totalProducts", "totalHits"):
+            valor = objeto.get(chave)
+            if type(valor) is int and valor >= 0:
+                valores.append(valor)
+            elif isinstance(valor, str) and valor.isascii() and valor.isdecimal() and len(valor) <= 12:
+                valores.append(int(valor))
+    return valores[0] if valores and len(set(valores)) == 1 else None
+
+
+def _verificar_limite_posicao(inicio):
+    if inicio < 0 or inicio >= LIMITE_RESULTADOS:
+        raise RuntimeError(f"Limite de paginacao conservador atingido na posicao {inicio}; "
+                           "aguarde confirmacao do fornecedor. Checkpoint preservado.")
+
+
 def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> list[dict]:
-    parametros = urlencode({"cgid": cgid, "start": inicio, "sz": TAMANHO_PAGINA})
+    _verificar_limite_posicao(inicio)
+    tamanho = min(TAMANHO_PAGINA, LIMITE_RESULTADOS - inicio)
+    parametros = urlencode({"cgid": cgid, "start": inicio, "sz": tamanho})
     url = (f"{BASE}/on/demandware.store/Sites-Nagumo-Site/pt_BR/Search-UpdateGrid?{parametros}")
     resposta = context.request.get(url, headers={"Accept": "*/*", "Referer": f"{BASE}/"}, timeout=60000)
     try:
         verificar_acesso(resposta.status, f"categoria {cgid}, posicao {inicio}", resposta.headers)
         if resposta.status >= 400:
             raise RuntimeError(f"HTTP {resposta.status} na categoria {cgid}, posicao {inicio}")
-        produtos = _extrair_produtos_da_pagina(resposta.text())
-        if len(produtos) > TAMANHO_PAGINA:
+        bruto = resposta.text()
+        produtos = _extrair_produtos_da_pagina(bruto)
+        total = _total_informado(json.loads(bruto))
+        if len(produtos) > tamanho:
             raise RuntimeError("Resposta excede o tamanho de pagina solicitado.")
         print(f"[INFO] Categoria '{cgid}': posicao {inicio} -> {len(produtos)} produtos.")
-        return produtos
+        print(f"[INFO] Total informado pelo servidor: {total if total is not None else 'indisponivel'}")
+        return PaginaCatalogo(produtos, total)
     finally:
         resposta.dispose()
 
@@ -829,6 +863,7 @@ def _processar_loja(
         while True:
             if inicio // TAMANHO_PAGINA >= MAX_PAGINAS_CATEGORIA:
                 raise RuntimeError(f"Limite de paginacao atingido em {cgid}; revisar catalogo.")
+            _verificar_limite_posicao(inicio)
             produtos = _buscar_pagina(context, cgid, inicio)
             assinatura = assinatura_pagina(produtos) if produtos else None
             if assinatura and assinatura in assinaturas:
@@ -839,8 +874,14 @@ def _processar_loja(
                 lote[resultado] += 1
             if assinatura:
                 assinaturas.add(assinatura)
-            concluida = len(produtos) < TAMANHO_PAGINA
             proxima = inicio + len(produtos)
+            total = getattr(produtos, "total", None)
+            if total is not None and total < proxima:
+                raise RuntimeError("Total do catalogo inconsistente com a pagina recebida.")
+            if total is not None and not produtos and inicio < total:
+                raise RuntimeError("Pagina vazia antes do total informado.")
+            concluida = (proxima == total if total is not None else
+                         len(produtos) < min(TAMANHO_PAGINA, LIMITE_RESULTADOS - inicio))
             # Dados e checkpoint na mesma transacao: ambos gravados ou nenhum.
             salvar_checkpoint(db, loja_codigo, cgid, proxima, assinaturas, concluida)
             db.commit()
