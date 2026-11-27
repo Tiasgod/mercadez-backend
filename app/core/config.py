@@ -1,4 +1,4 @@
-"""
+
 Configuracao central da aplicacao.
 
 Todos os valores sensiveis (chave secreta, URL do banco) vem de
@@ -21,6 +21,7 @@ class Settings(BaseSettings):
         "https://mercadez-ten.vercel.app,"
         "http://localhost:5500,"
         "http://127.0.0.1:5500"
+        "http://localhost:5173"
     )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
