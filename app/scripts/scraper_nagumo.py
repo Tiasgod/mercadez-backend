@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import time
 
@@ -26,91 +27,48 @@ from app.models.produto import Produto
 
 BASE = "https://www.nagumo.com.br"
 
-INTERVALO_ENTRE_REQUISICOES_SEGUNDOS = 3.0
-INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS = 3.0
-
 TAMANHO_PAGINA = 40
 
-# Limite conservador baseado nas recusas anteriores.
-LIMITE_RESULTADOS = 1000
+INTERVALO_PAGINAS = 3.0
+INTERVALO_CATEGORIAS = 3.0
+INTERVALO_LOJAS = 5.0
 
 LATITUDE = "-23.5325875"
 LONGITUDE = "-46.335124"
 
+LIMITE_PAGINACAO = int(
+    os.getenv("NAGUMO_LIMITE_PAGINACAO", "0")
+)
+
 
 # ============================================================
-# SUPERMERCADOS
+# LOJAS
 # ============================================================
 
 LOJAS = [
-    {
-        "nome": "Nagumo Poa",
-        "codigo": "22",
-    },
-    {
-        "nome": "Nagumo Poa_Kemel",
-        "codigo": "45",
-    },
-    {
-        "nome": "Nagumo_Suzano_Dona_Benta",
-        "codigo": "23",
-    },
-    {
-        "nome": "Nagumo Suzano",
-        "codigo": "27",
-    },
-    {
-        "nome": "Nagumo Itaqua",
-        "codigo": "30",
-    },
-    {
-        "nome": "Nagumo_Itaqua_Vila_Zeferina",
-        "codigo": "39",
-    },
-    {
-        "nome": "Nagumo_Mogi_Alto_Ipiranga",
-        "codigo": "52",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Merc_Bonsucesso",
-        "codigo": "41",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Cumbica",
-        "codigo": "42",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Shopping_Pimentas",
-        "codigo": "49",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Continental",
-        "codigo": "51",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Bonsucesso",
-        "codigo": "55",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Elenco",
-        "codigo": "56",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Anel_Viario",
-        "codigo": "57",
-    },
-    {
-        "nome": "Nagumo_Guarulhos_Alvorada",
-        "codigo": "61",
-    },
+    ("Nagumo Poa", "22"),
+    ("Nagumo Poa_Kemel", "45"),
+    ("Nagumo_Suzano_Dona_Benta", "23"),
+    ("Nagumo Suzano", "27"),
+    ("Nagumo Itaqua", "30"),
+    ("Nagumo_Itaqua_Vila_Zeferina", "39"),
+    ("Nagumo_Mogi_Alto_Ipiranga", "52"),
+    ("Nagumo_Guarulhos_Merc_Bonsucesso", "41"),
+    ("Nagumo_Guarulhos_Cumbica", "42"),
+    ("Nagumo_Guarulhos_Shopping_Pimentas", "49"),
+    ("Nagumo_Guarulhos_Continental", "51"),
+    ("Nagumo_Guarulhos_Bonsucesso", "55"),
+    ("Nagumo_Guarulhos_Elenco", "56"),
+    ("Nagumo_Guarulhos_Anel_Viario", "57"),
+    ("Nagumo_Guarulhos_Alvorada", "61"),
 ]
 
 
 # ============================================================
-# DEPARTAMENTOS
+# CATEGORIAS
 # ============================================================
 
-DEPARTAMENTOS = [
+CATEGORIAS = [
     "acougue",
     "basicos-e-matinais",
     "bazar",
@@ -139,81 +97,69 @@ class AcessoRecusado(RuntimeError):
         self.etapa = etapa
 
         super().__init__(
-            f"HTTP {status} em {etapa}. "
-            "Coleta interrompida."
+            f"HTTP {status} em {etapa}"
         )
 
 
-class LimitePaginacaoAtingido(Exception):
+class FalhaColeta(RuntimeError):
     pass
 
 
 # ============================================================
-# DIAGNOSTICO
+# LOGS
 # ============================================================
 
-def agora_utc():
+def agora():
 
     return datetime.now(timezone.utc)
 
 
-def registrar_evento(evento, **dados):
+def evento(tipo, **dados):
 
     print(
         json.dumps(
             {
-                "evento": evento,
-                "utc": agora_utc().isoformat(),
+                "evento": tipo,
+                "utc": agora().isoformat(),
                 **dados,
             },
             ensure_ascii=False,
+            default=str,
         ),
         flush=True,
     )
 
 
-def verificar_acesso(
-    status,
-    etapa,
-    headers=None,
-    duracao=None,
-):
+def verificar_http(status, etapa, headers=None):
 
     headers = headers or {}
 
-    headers_seguros = {
-        chave: str(headers[chave])[:200]
+    seguros = {
+        chave: str(headers[chave])
         for chave in (
             "content-type",
             "retry-after",
-            "x-request-id",
             "cf-ray",
-            "cf-mitigated",
-            "server",
+            "x-request-id",
         )
-        if chave in headers
-        and headers[chave] is not None
+        if headers.get(chave) is not None
     }
 
-    registrar_evento(
+    evento(
         "http",
-        etapa=etapa,
         status=status,
-        headers=headers_seguros,
-        duracao_segundos=duracao,
+        etapa=etapa,
+        headers=seguros,
     )
 
     if status in (403, 429):
 
-        raise AcessoRecusado(
-            status,
-            etapa,
-        )
+        raise AcessoRecusado(status, etapa)
 
-    if status >= 400 or status == 0:
+    if status != 200:
 
-        raise RuntimeError(
-            f"Falha HTTP {status} em {etapa}."
+        raise FalhaColeta(
+            f"HTTP {status} em {etapa}"
         )
 
 
@@ -221,11 +167,7 @@ def verificar_acesso(
 # CHECKPOINTS
 # ============================================================
 
-def ler_checkpoint(
-    db,
-    codigo,
-    categoria,
-):
+def ler_checkpoint(db, codigo, categoria):
 
     resultado = db.execute(
         text("""
@@ -309,16 +251,12 @@ def salvar_checkpoint(
                 sorted(assinaturas)
             ),
             "concluida": concluida,
-            "agora": agora_utc(),
+            "agora": agora(),
         },
     )
 
 
-def limpar_checkpoints_concluidos(
-    db,
-    codigo,
-    categorias,
-):
+def limpar_checkpoints(db, codigo, categorias):
 
     for categoria in categorias:
 
@@ -344,9 +282,7 @@ def limpar_checkpoints_concluidos(
 
 def chave_produto(nome):
 
-    return " ".join(
-        nome.split()
-    ).casefold()
+    return " ".join(nome.split()).casefold()
 
 
 def assinatura_pagina(produtos):
@@ -364,20 +300,12 @@ def assinatura_pagina(produtos):
 
         if identificador:
 
-            chave = (
-                "id:" + str(identificador)
-            )
+            chave = "id:" + str(identificador)
 
         else:
 
-            chave = (
-                "nome:"
-                + chave_produto(
-                    str(
-                        produto.get("productName")
-                        or ""
-                    )
-                )
+            chave = "nome:" + chave_produto(
+                str(produto.get("productName") or "")
             )
 
         identificadores.append(chave)
@@ -396,32 +324,7 @@ def assinatura_pagina(produtos):
 # NAVEGADOR
 # ============================================================
 
-def criar_navegador(playwright):
-
-    browser = playwright.chromium.launch(
-        headless=True,
-    )
-
-    context = browser.new_context(
-        locale="pt-BR",
-        timezone_id="America/Sao_Paulo",
-        extra_http_headers={
-            "Accept-Language": (
-                "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-            ),
-        },
-    )
-
-    return browser, context
-
-
-# ============================================================
-# ABRIR NAGUMO
-# ============================================================
-
 def abrir_nagumo(page):
-
-    inicio = time.monotonic()
 
     resposta = page.goto(
         BASE,
@@ -431,44 +334,27 @@ def abrir_nagumo(page):
 
     if resposta is None:
 
-        raise RuntimeError(
+        raise FalhaColeta(
             "Nagumo nao retornou resposta."
         )
 
-    verificar_acesso(
+    verificar_http(
         resposta.status,
         "pagina inicial",
         resposta.headers,
-        round(
-            time.monotonic() - inicio,
-            2,
-        ),
     )
 
-    print(
-        "[OK] Nagumo aberto no navegador.",
-        flush=True,
-    )
+    print("[OK] Nagumo aberto.")
 
-
-# ============================================================
-# SELECIONAR SUPERMERCADO
-# ============================================================
 
 def selecionar_loja(page, codigo):
 
-    print(
-        f"[INFO] Selecionando loja {codigo}..."
-    )
-
-    inicio = time.monotonic()
-
     resultado = page.evaluate(
         """
-        async ({ storeId, lat, lng }) => {
+        async ({codigo, lat, lng}) => {
 
             const parametros = new URLSearchParams({
-                storeId: storeId,
+                storeId: codigo,
                 method: "Retirada",
                 lat: lat,
                 lng: lng
@@ -476,124 +362,84 @@ def selecionar_loja(page, codigo):
 
             const url =
                 "/on/demandware.store/" +
-                "Sites-Nagumo-Site/" +
-                "pt_BR/" +
+                "Sites-Nagumo-Site/pt_BR/" +
                 "Stores-SelectStore?" +
                 parametros.toString();
 
-            try {
+            const resposta = await fetch(url, {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                    "Accept": "*/*",
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
 
-                const resposta = await fetch(
-                    url,
-                    {
-                        method: "GET",
-                        credentials: "include",
-                        headers: {
-                            "Accept": "*/*",
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    }
-                );
-
-                return {
-                    status: resposta.status,
-                    texto: await resposta.text(),
-                    headers: {
-                        "content-type":
-                            resposta.headers.get("content-type"),
-                        "retry-after":
-                            resposta.headers.get("retry-after"),
-                        "x-request-id":
-                            resposta.headers.get("x-request-id"),
-                        "cf-ray":
-                            resposta.headers.get("cf-ray")
-                    }
-                };
-
-            } catch (erro) {
-
-                return {
-                    status: 0,
-                    texto: String(erro)
-                };
-
-            }
+            return {
+                status: resposta.status,
+                texto: await resposta.text(),
+                headers: {
+                    "content-type":
+                        resposta.headers.get("content-type"),
+                    "retry-after":
+                        resposta.headers.get("retry-after"),
+                    "cf-ray":
+                        resposta.headers.get("cf-ray")
+                }
+            };
         }
         """,
         {
-            "storeId": codigo,
+            "codigo": codigo,
             "lat": LATITUDE,
             "lng": LONGITUDE,
         },
     )
 
-    verificar_acesso(
+    verificar_http(
         resultado["status"],
         f"selecao da loja {codigo}",
         resultado.get("headers"),
-        round(
-            time.monotonic() - inicio,
-            2,
-        ),
     )
 
-    if resultado["status"] != 200:
+    dados = json.loads(resultado["texto"])
 
-        raise RuntimeError(
-            f"Falha na selecao da loja {codigo}."
+    if not isinstance(dados, dict):
+
+        raise FalhaColeta(
+            "Resposta de selecao invalida."
         )
 
-    try:
+    if not dados.get("success"):
 
-        dados = json.loads(
-            resultado["texto"]
+        raise FalhaColeta(
+            f"Nao foi possivel selecionar loja {codigo}"
         )
 
-    except json.JSONDecodeError as erro:
-
-        raise RuntimeError(
-            "Resposta de selecao nao e JSON."
-        ) from erro
-
-    if (
-        not isinstance(dados, dict)
-        or not dados.get("success")
-    ):
-
-        raise RuntimeError(
-            f"Nagumo nao confirmou a loja {codigo}."
-        )
-
-    print(
-        f"[OK] Loja {codigo} selecionada."
-    )
+    print(f"[OK] Loja {codigo} selecionada.")
 
 
 # ============================================================
-# IDENTIFICAR TOTAL DE RESULTADOS
+# TOTAL DE PRODUTOS
 # ============================================================
 
 def total_informado(dados):
 
-    if not isinstance(dados, dict):
-
-        return None
-
     totais = []
 
-    objetos = (
+    objetos = [
         dados,
         dados.get("pagination"),
         dados.get("productSearch"),
-    )
+    ]
 
-    campos = (
+    campos = [
         "total",
         "totalCount",
         "totalResults",
         "totalProducts",
         "totalHits",
-    )
+    ]
 
     for objeto in objetos:
 
@@ -626,71 +472,27 @@ def total_informado(dados):
 
 
 # ============================================================
-# VALIDAR PAGINACAO
-# ============================================================
-
-def verificar_limite_posicao(
-    inicio,
-    codigo,
-    categoria,
-):
-
-    if inicio < 0:
-
-        raise ValueError(
-            f"Posicao invalida: {inicio}"
-        )
-
-    if inicio >= LIMITE_RESULTADOS:
-
-        registrar_evento(
-            "limite_paginacao",
-            loja_codigo=codigo,
-            categoria=categoria,
-            posicao=inicio,
-            limite=LIMITE_RESULTADOS,
-            checkpoint_preservado=True,
-            nova_recusa_http=False,
-        )
-
-        return False
-
-    return True
-
-
-# ============================================================
 # CONSULTAR PAGINA
 # ============================================================
 
-def buscar_pagina(
-    context,
-    categoria,
-    inicio,
-    codigo,
-):
+def buscar_pagina(context, codigo, categoria, inicio):
 
-    if not verificar_limite_posicao(
-        inicio,
-        codigo,
-        categoria,
-    ):
+    restante = LIMITE_PAGINACAO - inicio
 
-        raise LimitePaginacaoAtingido(
-            f"Limite de paginacao: {inicio}"
+    if restante <= 0:
+
+        raise FalhaColeta(
+            f"Limite confirmado de paginacao "
+            f"atingido na posicao {inicio}."
         )
 
-    tamanho = min(
-        TAMANHO_PAGINA,
-        LIMITE_RESULTADOS - inicio,
-    )
+    tamanho = min(TAMANHO_PAGINA, restante)
 
-    parametros = urlencode(
-        {
-            "cgid": categoria,
-            "start": inicio,
-            "sz": tamanho,
-        }
-    )
+    parametros = urlencode({
+        "cgid": categoria,
+        "start": inicio,
+        "sz": tamanho,
+    })
 
     url = (
         f"{BASE}/on/demandware.store/"
@@ -701,29 +503,21 @@ def buscar_pagina(
     print(
         f"[INFO] Loja={codigo} | "
         f"Categoria={categoria} | "
-        f"Posicao={inicio} | "
-        f"Tamanho={tamanho}"
+        f"Posicao={inicio}"
     )
-
-    inicio_http = time.monotonic()
 
     resposta = context.request.get(
         url,
+        timeout=60000,
         headers={
             "Accept": "*/*",
-            "Referer": f"{BASE}/",
+            "Referer": BASE + "/",
         },
-        timeout=60000,
     )
 
     try:
 
-        duracao = round(
-            time.monotonic() - inicio_http,
-            2,
-        )
-
-        verificar_acesso(
+        verificar_http(
             resposta.status,
             (
                 f"loja {codigo}, "
@@ -731,7 +525,6 @@ def buscar_pagina(
                 f"posicao {inicio}"
             ),
             resposta.headers,
-            duracao,
         )
 
         try:
@@ -740,50 +533,50 @@ def buscar_pagina(
 
         except Exception as erro:
 
-            raise RuntimeError(
+            raise FalhaColeta(
                 "Resposta do catalogo nao e JSON."
             ) from erro
 
         if not isinstance(dados, dict):
 
-            raise RuntimeError(
-                "Formato inesperado do catalogo."
+            raise FalhaColeta(
+                "Formato de catalogo invalido."
             )
 
         produtos = dados.get(
             "productsSearchResult"
         )
 
-        if (
-            not isinstance(produtos, list)
-            or any(
-                not isinstance(produto, dict)
-                for produto in produtos
+        if not isinstance(produtos, list):
+
+            raise FalhaColeta(
+                "Lista de produtos nao encontrada."
             )
+
+        if any(
+            not isinstance(p, dict)
+            for p in produtos
         ):
 
-            raise RuntimeError(
-                "Lista de produtos invalida."
+            raise FalhaColeta(
+                "Produto com formato invalido."
             )
 
         if len(produtos) > tamanho:
 
-            raise RuntimeError(
-                "Pagina retornou mais produtos "
-                "do que o solicitado."
+            raise FalhaColeta(
+                "Quantidade de produtos inconsistente."
             )
 
         total = total_informado(dados)
 
         print(
-            f"[INFO] Categoria '{categoria}': "
-            f"posicao {inicio} -> "
-            f"{len(produtos)} produtos."
+            f"[INFO] Produtos recebidos: "
+            f"{len(produtos)}"
         )
 
         print(
-            "[INFO] Total informado pelo servidor: "
-            f"{total if total is not None else 'indisponivel'}"
+            f"[INFO] Total informado: {total}"
         )
 
         return produtos, total, tamanho
@@ -794,83 +587,20 @@ def buscar_pagina(
 
 
 # ============================================================
-# CARREGAR PRODUTOS EXISTENTES
+# IMAGENS
 # ============================================================
 
-def carregar_produtos(db, loja_id):
+def normalizar_imagem(valor):
 
-    print(
-        "[INFO] Carregando produtos existentes "
-        "da loja no banco..."
-    )
-
-    produtos = (
-        db.query(Produto)
-        .filter(
-            Produto.loja_externa_id == loja_id
-        )
-        .all()
-    )
-
-    mapa = {}
-
-    for produto in produtos:
-
-        nome = (
-            produto.nome_produto or ""
-        ).strip()
-
-        if not nome:
-
-            continue
-
-        chave = chave_produto(nome)
-
-        if chave in mapa:
-
-            mapa[chave] = None
-
-        else:
-
-            mapa[chave] = produto
-
-    ambiguos = sum(
-        produto is None
-        for produto in mapa.values()
-    )
-
-    if ambiguos:
-
-        print(
-            f"[AVISO] {ambiguos} nomes ambiguos. "
-            "Registros preservados."
-        )
-
-    print(
-        f"[OK] {len(mapa)} chaves "
-        "carregadas em memoria."
-    )
-
-    return mapa
-
-
-# ============================================================
-# NORMALIZAR IMAGENS
-# ============================================================
-
-def normalizar_url_imagem(valor):
-
-    if (
-        not isinstance(valor, str)
-        or not valor.strip()
-    ):
+    if not isinstance(valor, str):
 
         return None
 
-    url = urljoin(
-        BASE + "/",
-        valor.strip(),
-    )
+    if not valor.strip():
+
+        return None
+
+    url = urljoin(BASE + "/", valor.strip())
 
     url = re.sub(
         r"^https?://www\.nagumo\.com\.br/"
@@ -889,22 +619,23 @@ def normalizar_url_imagem(valor):
 
         return None
 
-    if (
-        parsed.scheme not in ("http", "https")
-        or not parsed.hostname
-        or re.search(
-            r"https?://",
-            parsed.path,
-            re.I,
-        )
-    ):
+    if parsed.scheme not in ("http", "https"):
 
         return None
 
-    if (
-        len(url) > 2048
-        or any(c.isspace() for c in url)
-    ):
+    if not parsed.hostname:
+
+        return None
+
+    if re.search(r"https?://", parsed.path, re.I):
+
+        return None
+
+    if len(url) > 2048:
+
+        return None
+
+    if any(c.isspace() for c in url):
 
         return None
 
@@ -916,11 +647,7 @@ def normalizar_url_imagem(valor):
 
         return None
 
-    arquivo = (
-        parsed.path
-        .rsplit("/", 1)[-1]
-        .lower()
-    )
+    arquivo = parsed.path.rsplit("/", 1)[-1].lower()
 
     if arquivo in {
         "meunagumo.png",
@@ -933,73 +660,39 @@ def normalizar_url_imagem(valor):
     return url
 
 
-# ============================================================
-# EXTRAIR IMAGENS
-# ============================================================
-
 def extrair_imagens(produto):
 
     imagens = []
-    vistos = set()
 
-    campos_imagem = {
+    campos = {
         "image",
         "images",
         "imagegroups",
-        "imagegroup",
+        "imageurl",
         "productimage",
         "productimages",
-        "imageurl",
         "thumbnail",
         "thumbnailurl",
         "largeimage",
-        "smallimage",
-        "mediumimage",
         "primaryimage",
         "variationimages",
     }
 
-    campos_url = {
-        "url",
-        "src",
-        "link",
-        "absurl",
-        "absoluteurl",
-        "href",
-        "large",
-        "medium",
-        "small",
-        "hires",
-        "desktop",
-        "mobile",
-    }
+    def percorrer(valor, contexto=False, nivel=0):
 
-    def guardar(valor):
-
-        url = normalizar_url_imagem(valor)
-
-        if not url or url in vistos:
-
-            return
-
-        vistos.add(url)
-        imagens.append(url)
-
-    def percorrer(
-        valor,
-        contexto_imagem=False,
-        profundidade=0,
-    ):
-
-        if profundidade > 10:
+        if nivel > 10:
 
             return
 
         if isinstance(valor, str):
 
-            if contexto_imagem:
+            if contexto:
 
-                guardar(valor)
+                url = normalizar_imagem(valor)
+
+                if url and url not in imagens:
+
+                    imagens.append(url)
 
         elif isinstance(valor, list):
 
@@ -1007,45 +700,32 @@ def extrair_imagens(produto):
 
                 percorrer(
                     item,
-                    contexto_imagem,
-                    profundidade + 1,
+                    contexto,
+                    nivel + 1,
                 )
 
         elif isinstance(valor, dict):
 
             for chave, item in valor.items():
 
-                key = (
+                nome = (
                     chave.lower()
                     .replace("_", "")
                     .replace("-", "")
                 )
 
-                if (
-                    key in campos_imagem
-                    or key.startswith("image")
-                    or key.endswith("image")
-                ):
+                imagem = (
+                    contexto
+                    or nome in campos
+                    or nome.startswith("image")
+                    or nome.endswith("image")
+                )
 
-                    percorrer(
-                        item,
-                        True,
-                        profundidade + 1,
-                    )
-
-                elif contexto_imagem and (
-                    key in campos_url
-                    or isinstance(
-                        item,
-                        (list, dict),
-                    )
-                ):
-
-                    percorrer(
-                        item,
-                        True,
-                        profundidade + 1,
-                    )
+                percorrer(
+                    item,
+                    imagem,
+                    nivel + 1,
+                )
 
     percorrer(produto)
 
@@ -1053,7 +733,51 @@ def extrair_imagens(produto):
 
 
 # ============================================================
-# SALVAR OU ATUALIZAR PRODUTO
+# CARREGAR PRODUTOS
+# ============================================================
+
+def carregar_produtos(db, loja_id):
+
+    produtos = (
+        db.query(Produto)
+        .filter(
+            Produto.loja_externa_id == loja_id
+        )
+        .all()
+    )
+
+    existentes = {}
+
+    for produto in produtos:
+
+        nome = (
+            produto.nome_produto or ""
+        ).strip()
+
+        if not nome:
+
+            continue
+
+        chave = chave_produto(nome)
+
+        if chave in existentes:
+
+            existentes[chave] = None
+
+        else:
+
+            existentes[chave] = produto
+
+    print(
+        f"[OK] {len(existentes)} "
+        "chaves carregadas."
+    )
+
+    return existentes
+
+
+# ============================================================
+# SALVAR PRODUTO
 # ============================================================
 
 def salvar_produto(
@@ -1088,15 +812,11 @@ def salvar_produto(
 
         return "ignorado"
 
-    preco_raw = venda.get("value")
-
-    if preco_raw is None:
-
-        return "ignorado"
-
     try:
 
-        preco = Decimal(str(preco_raw))
+        preco = Decimal(
+            str(venda.get("value"))
+        )
 
     except Exception:
 
@@ -1106,22 +826,17 @@ def salvar_produto(
 
         return "ignorado"
 
-    imagens = extrair_imagens(dados)
-
     chave = chave_produto(nome)
 
-    if (
-        chave in existentes
-        and existentes[chave] is None
-    ):
+    imagens = extrair_imagens(dados)
+
+    if chave in existentes and existentes[chave] is None:
 
         return "ignorado"
 
     produto = existentes.get(chave)
 
-    # --------------------------------------------------------
     # PRODUTO NOVO
-    # --------------------------------------------------------
 
     if produto is None:
 
@@ -1133,9 +848,7 @@ def salvar_produto(
             origem="EXTERNO",
             loja_externa_id=loja.id,
             imagem_url=(
-                imagens[0]
-                if imagens
-                else None
+                imagens[0] if imagens else None
             ),
             imagens_urls=imagens,
         )
@@ -1154,72 +867,45 @@ def salvar_produto(
 
         return "novo"
 
-    # --------------------------------------------------------
-    # ATUALIZAR CATEGORIA
-    # --------------------------------------------------------
+    # CATEGORIA
 
     if categoria and not produto.tags:
 
         produto.tags = categoria
 
-    # --------------------------------------------------------
-    # PRESERVAR IMAGENS EXISTENTES
-    # --------------------------------------------------------
+    # PRESERVAR IMAGENS
 
-    principal = normalizar_url_imagem(
-        produto.imagem_url
-    )
-
-    imagens_antigas = (
+    antigas = (
         produto.imagens_urls
-        if isinstance(
-            produto.imagens_urls,
-            list,
-        )
+        if isinstance(produto.imagens_urls, list)
         else []
     )
 
     mescladas = list(
         dict.fromkeys(
             url
-            for valor in [
-                principal,
-                *imagens_antigas,
+            for url in [
+                produto.imagem_url,
+                *antigas,
                 *imagens,
             ]
-            if (
-                url := normalizar_url_imagem(
-                    valor
-                )
-            )
+            if isinstance(url, str) and url.strip()
         )
     )
 
-    if mescladas:
+    if mescladas != antigas:
 
-        if produto.imagens_urls != mescladas:
+        produto.imagens_urls = mescladas
 
-            produto.imagens_urls = mescladas
+    if not produto.imagem_url and mescladas:
 
-        nova_principal = (
-            principal or mescladas[0]
-        )
+        produto.imagem_url = mescladas[0]
 
-        if produto.imagem_url != nova_principal:
-
-            produto.imagem_url = nova_principal
-
-    # --------------------------------------------------------
-    # PRECO SEM ALTERACAO
-    # --------------------------------------------------------
+    # PRECO
 
     if produto.preco == preco:
 
         return "sem_alteracao"
-
-    # --------------------------------------------------------
-    # PRECO ALTERADO
-    # --------------------------------------------------------
 
     produto.preco = preco
 
@@ -1244,72 +930,38 @@ def processar_categoria(
     codigo,
     categoria,
     existentes,
+    contagem,
+    progresso,
 ):
 
-    inicio, assinaturas, concluida = (
-        ler_checkpoint(
-            db,
-            codigo,
-            categoria,
-        )
+    inicio, assinaturas, concluida = ler_checkpoint(
+        db,
+        codigo,
+        categoria,
     )
 
     db.commit()
 
-    contagem = Counter()
-
-    print(
-        f"[INFO] Categoria: {categoria}"
-    )
+    progresso["categoria"] = categoria
+    progresso["posicao"] = inicio
 
     if concluida:
 
         print(
-            "[INFO] Categoria ja concluida "
-            "neste ciclo."
+            f"[INFO] {categoria} ja concluida."
         )
 
-        return contagem, "concluida"
-
-    print(
-        f"[INFO] Checkpoint encontrado: "
-        f"posicao {inicio}"
-    )
+        return
 
     while True:
 
-        # ----------------------------------------------------
-        # LIMITE DE PAGINACAO
-        # ----------------------------------------------------
-
-        if not verificar_limite_posicao(
-            inicio,
-            codigo,
-            categoria,
-        ):
-
-            print(
-                f"[AVISO] Categoria {categoria}: "
-                f"limite de {LIMITE_RESULTADOS} "
-                "resultados atingido."
-            )
-
-            print(
-                "[INFO] Checkpoint e produtos "
-                "preservados."
-            )
-
-            return contagem, "limite"
-
-        # ----------------------------------------------------
-        # CONSULTAR PAGINA
-        # ----------------------------------------------------
+        progresso["posicao"] = inicio
 
         produtos, total, tamanho = buscar_pagina(
             context,
+            codigo,
             categoria,
             inicio,
-            codigo,
         )
 
         assinatura = (
@@ -1318,65 +970,34 @@ def processar_categoria(
             else None
         )
 
-        # ----------------------------------------------------
-        # DETECTAR PAGINA REPETIDA
-        # ----------------------------------------------------
+        if assinatura and assinatura in assinaturas:
 
-        if (
-            assinatura
-            and assinatura in assinaturas
-        ):
-
-            registrar_evento(
-                "pagina_repetida",
-                loja_codigo=codigo,
-                categoria=categoria,
-                posicao=inicio,
+            raise FalhaColeta(
+                f"Pagina repetida na posicao {inicio}"
             )
-
-            print(
-                "[AVISO] Pagina repetida detectada. "
-                "Paginacao interrompida."
-            )
-
-            return contagem, "pagina_repetida"
 
         proxima = inicio + len(produtos)
 
-        # ----------------------------------------------------
-        # VALIDAR CONSISTENCIA
-        # ----------------------------------------------------
-
         if total is not None and total < proxima:
 
-            raise RuntimeError(
-                "Total informado pelo servidor "
-                "e inconsistente."
+            raise FalhaColeta(
+                "Total de produtos inconsistente."
             )
 
-        if (
-            total is not None
-            and not produtos
-            and inicio < total
-        ):
+        if total is not None and not produtos and inicio < total:
 
-            raise RuntimeError(
-                "Pagina vazia antes do "
-                "total informado."
+            raise FalhaColeta(
+                "Pagina vazia antes do total informado."
             )
-
-        # ----------------------------------------------------
-        # PROCESSAR PRODUTOS
-        # ----------------------------------------------------
 
         lote = Counter()
 
-        for produto in produtos:
+        for dados in produtos:
 
             resultado = salvar_produto(
                 db,
                 loja,
-                produto,
+                dados,
                 existentes,
                 categoria,
             )
@@ -1395,10 +1016,6 @@ def processar_categoria(
 
             concluida = len(produtos) < tamanho
 
-        # ----------------------------------------------------
-        # GRAVAR LOTE E CHECKPOINT
-        # ----------------------------------------------------
-
         salvar_checkpoint(
             db,
             codigo,
@@ -1412,18 +1029,16 @@ def processar_categoria(
 
         contagem.update(lote)
 
+        progresso["posicao"] = proxima
+
         print(
             f"[OK] Lote gravado: "
-            f"loja {codigo}, "
-            f"{categoria}, "
-            f"posicao {inicio}, "
+            f"loja={codigo}, "
+            f"categoria={categoria}, "
+            f"posicao={inicio}, "
             f"{dict(lote)}",
             flush=True,
         )
-
-        # ----------------------------------------------------
-        # FINALIZAR CATEGORIA
-        # ----------------------------------------------------
 
         if concluida:
 
@@ -1431,17 +1046,15 @@ def processar_categoria(
                 f"[OK] Categoria {categoria} concluida."
             )
 
-            return contagem, "concluida"
+            return
 
         inicio = proxima
 
-        time.sleep(
-            INTERVALO_ENTRE_REQUISICOES_SEGUNDOS
-        )
+        time.sleep(INTERVALO_PAGINAS)
 
 
 # ============================================================
-# PROCESSAR SUPERMERCADO
+# PROCESSAR LOJA
 # ============================================================
 
 def processar_loja(
@@ -1451,19 +1064,15 @@ def processar_loja(
     nome,
     codigo,
     categorias,
+    contagem,
+    progresso,
 ):
 
-    print()
     print("=" * 70)
-    print(
-        f"LOJA: {nome} (codigo {codigo})"
-    )
+    print(f"LOJA: {nome} (codigo {codigo})")
     print("=" * 70)
 
-    selecionar_loja(
-        page,
-        codigo,
-    )
+    selecionar_loja(page, codigo)
 
     loja = (
         db.query(LojaExterna)
@@ -1482,16 +1091,6 @@ def processar_loja(
         db.add(loja)
         db.flush()
 
-        print(
-            f"[OK] Loja externa criada: {nome}"
-        )
-
-    else:
-
-        print(
-            f"[OK] Loja externa encontrada: {nome}"
-        )
-
     existentes = carregar_produtos(
         db,
         loja.id,
@@ -1499,130 +1098,167 @@ def processar_loja(
 
     db.commit()
 
-    contagem = Counter()
+    for categoria in categorias:
 
-    categorias_concluidas = 0
-
-    inicio_loja = time.monotonic()
-
-    for indice, categoria in enumerate(
-        categorias,
-        start=1,
-    ):
-
-        print()
-
-        print(
-            f"[INFO] Categoria "
-            f"{indice}/{len(categorias)}: "
-            f"{categoria}"
-        )
-
-        resultado, estado = processar_categoria(
+        processar_categoria(
             db,
             context,
             loja,
             codigo,
             categoria,
             existentes,
+            contagem,
+            progresso,
         )
 
-        contagem.update(resultado)
+        time.sleep(INTERVALO_CATEGORIAS)
 
-        if estado == "concluida":
-
-            categorias_concluidas += 1
-
-        else:
-
-            # Nao confundir limite de cobertura
-            # com uma categoria completa.
-            registrar_evento(
-                "cobertura_limitada",
-                loja_codigo=codigo,
-                categoria=categoria,
-                motivo=estado,
-                categorias_concluidas=(
-                    categorias_concluidas
-                ),
-                total_categorias=len(categorias),
-            )
-
-            return contagem, False
-
-        time.sleep(
-            INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS
-        )
-
-    limpar_checkpoints_concluidos(
+    limpar_checkpoints(
         db,
         codigo,
         categorias,
     )
 
-    duracao = round(
-        time.monotonic() - inicio_loja,
-        2,
-    )
-
-    print()
-    print("=" * 70)
-    print(f"[OK] Loja {codigo} finalizada.")
     print(
-        f"[INFO] Categorias concluidas: "
-        f"{categorias_concluidas}/{len(categorias)}"
+        f"[OK] Loja {nome} concluida."
     )
-    print(
-        f"[INFO] Produtos novos: "
-        f"{contagem['novo']}"
-    )
-    print(
-        f"[INFO] Precos alterados: "
-        f"{contagem['preco_alterado']}"
-    )
-    print(
-        f"[INFO] Sem alteracao: "
-        f"{contagem['sem_alteracao']}"
-    )
-    print(
-        f"[INFO] Ignorados: "
-        f"{contagem['ignorado']}"
-    )
-    print(
-        f"[INFO] Duracao: {duracao}s"
-    )
-    print("=" * 70)
-
-    return contagem, True
 
 
 # ============================================================
-# EXECUCAO PRINCIPAL
+# RELATORIO FINAL
+# ============================================================
+
+def gerar_relatorio(
+    lojas,
+    resultados,
+    erros,
+    contagem,
+    inicio,
+):
+
+    processadas = len(resultados)
+
+    concluidas = sum(
+        r["status"] == "concluida"
+        for r in resultados
+    )
+
+    falhas = processadas - concluidas
+
+    relatorio = {
+        "lojas_programadas": len(lojas),
+        "lojas_processadas": processadas,
+        "lojas_concluidas": concluidas,
+        "lojas_com_falhas": falhas,
+        "lojas_nao_processadas": (
+            len(lojas) - processadas
+        ),
+        "produtos_analisados": sum(
+            contagem.values()
+        ),
+        "produtos_novos": contagem["novo"],
+        "precos_alterados": contagem[
+            "preco_alterado"
+        ],
+        "sem_alteracao": contagem[
+            "sem_alteracao"
+        ],
+        "ignorados": contagem["ignorado"],
+        "duracao_segundos": round(
+            time.monotonic() - inicio,
+            2,
+        ),
+        "resultados": resultados,
+        "erros": erros,
+    }
+
+    print()
+    print("=" * 70)
+    print("MERCADEZ - RELATORIO FINAL")
+    print("=" * 70)
+
+    for chave, valor in relatorio.items():
+
+        if chave not in ("resultados", "erros"):
+
+            print(f"{chave}: {valor}")
+
+    print()
+    print("DETALHAMENTO DAS FALHAS")
+    print("=" * 70)
+
+    if not erros:
+
+        print("Nenhuma falha registrada.")
+
+    for erro in erros:
+
+        print()
+        print(f"Loja: {erro['loja']}")
+        print(f"Codigo: {erro['codigo']}")
+        print(f"Categoria: {erro['categoria']}")
+        print(f"Posicao: {erro['posicao']}")
+        print(f"Tipo: {erro['tipo']}")
+        print(f"Mensagem: {erro['mensagem']}")
+        print(f"HTTP: {erro['status_http']}")
+        print(f"Horario: {erro['horario']}")
+
+    os.makedirs(
+        "diagnostico",
+        exist_ok=True,
+    )
+
+    with open(
+        "diagnostico/relatorio_scraper.json",
+        "w",
+        encoding="utf-8",
+    ) as arquivo:
+
+        json.dump(
+            relatorio,
+            arquivo,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    evento(
+        "resultado_coleta",
+        **relatorio,
+    )
+
+
+# ============================================================
+# EXECUCAO
 # ============================================================
 
 def rodar(lojas, categorias):
 
-    db = None
-    browser = None
-    context = None
+    inicio = time.monotonic()
 
-    inicio_execucao = time.monotonic()
+    erros = []
+    resultados = []
+    contagem = Counter()
 
-    contagem_geral = Counter()
-
-    lojas_concluidas = 0
-    cobertura_completa = True
+    acesso_recusado = False
 
     try:
 
-        db = SessionLocal()
+        if LIMITE_PAGINACAO <= 0:
 
-        db.expire_on_commit = False
+            raise FalhaColeta(
+                "Configure NAGUMO_LIMITE_PAGINACAO "
+                "com o limite confirmado pelo fornecedor."
+            )
 
         with sync_playwright() as playwright:
 
-            browser, context = criar_navegador(
-                playwright
+            browser = playwright.chromium.launch(
+                headless=True
+            )
+
+            context = browser.new_context(
+                locale="pt-BR",
+                timezone_id="America/Sao_Paulo",
             )
 
             try:
@@ -1631,153 +1267,151 @@ def rodar(lojas, categorias):
 
                 abrir_nagumo(page)
 
-                print(
-                    f"[OK] {len(categorias)} "
-                    "departamentos configurados."
-                )
-
-                for categoria in categorias:
-
-                    print(f"       - {categoria}")
-
-                print(
-                    f"[INFO] Total de lojas: "
-                    f"{len(lojas)}"
-                )
-
-                print(
-                    f"[INFO] Intervalo entre paginas: "
-                    f"{INTERVALO_ENTRE_REQUISICOES_SEGUNDOS}s"
-                )
-
-                print(
-                    f"[INFO] Intervalo entre categorias: "
-                    f"{INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS}s"
-                )
-
-                for loja in lojas:
+                for nome, codigo in lojas:
 
                     print(
                         "[INFO] Loja em processamento: "
-                        f"{loja['nome']} "
-                        f"(codigo {loja['codigo']})",
-                        flush=True,
+                        f"{nome} (codigo {codigo})"
                     )
 
-                    resultado, completa = processar_loja(
-                        db,
-                        page,
-                        context,
-                        loja["nome"],
-                        loja["codigo"],
-                        categorias,
-                    )
+                    db = SessionLocal()
+                    db.expire_on_commit = False
 
-                    contagem_geral.update(
-                        resultado
-                    )
+                    progresso = {
+                        "categoria": None,
+                        "posicao": None,
+                    }
 
-                    if not completa:
+                    status_loja = "concluida"
 
-                        cobertura_completa = False
+                    try:
+
+                        processar_loja(
+                            db,
+                            page,
+                            context,
+                            nome,
+                            codigo,
+                            categorias,
+                            contagem,
+                            progresso,
+                        )
+
+                    except Exception as erro:
+
+                        db.rollback()
+
+                        status_loja = "falha"
+
+                        registro = {
+                            "loja": nome,
+                            "codigo": codigo,
+                            "categoria": progresso[
+                                "categoria"
+                            ],
+                            "posicao": progresso[
+                                "posicao"
+                            ],
+                            "tipo": type(erro).__name__,
+                            "mensagem": str(erro),
+                            "status_http": getattr(
+                                erro,
+                                "status",
+                                None,
+                            ),
+                            "horario": agora().isoformat(),
+                        }
+
+                        erros.append(registro)
+
+                        evento(
+                            "erro_loja",
+                            **registro,
+                        )
+
+                        if isinstance(
+                            erro,
+                            AcessoRecusado,
+                        ):
+
+                            acesso_recusado = True
+
+                            print(
+                                "[ERRO] Acesso recusado. "
+                                "Consultas interrompidas."
+                            )
+
+                        else:
+
+                            print(
+                                "[AVISO] Falha tecnica "
+                                f"na loja {nome}."
+                            )
+
+                            print(
+                                "[INFO] Lotes anteriores "
+                                "preservados."
+                            )
+
+                            print(
+                                "[INFO] Avancando para "
+                                "a proxima loja."
+                            )
+
+                    finally:
+
+                        db.close()
+
+                        resultados.append({
+                            "loja": nome,
+                            "codigo": codigo,
+                            "status": status_loja,
+                        })
+
+                    if acesso_recusado:
 
                         break
 
-                    lojas_concluidas += 1
+                    time.sleep(INTERVALO_LOJAS)
 
             finally:
 
                 try:
 
-                    if context is not None:
-
-                        context.close()
+                    context.close()
 
                 finally:
 
-                    if browser is not None:
+                    browser.close()
 
-                        browser.close()
+    except Exception as erro:
 
-        print()
-        print("=" * 70)
-
-        if cobertura_completa:
-
-            print(
-                "SCRAPER FINALIZADO"
-            )
-
-        else:
-
-            print(
-                "SCRAPER ENCERRADO COM "
-                "COBERTURA LIMITADA"
-            )
-
-        print("=" * 70)
-
-        print(
-            f"[INFO] Lojas concluidas: "
-            f"{lojas_concluidas}/{len(lojas)}"
-        )
-
-        print(
-            f"[INFO] Produtos analisados: "
-            f"{sum(contagem_geral.values())}"
-        )
-
-        print(
-            f"[INFO] Produtos novos: "
-            f"{contagem_geral['novo']}"
-        )
-
-        print(
-            f"[INFO] Precos alterados: "
-            f"{contagem_geral['preco_alterado']}"
-        )
-
-        print(
-            f"[INFO] Sem alteracao: "
-            f"{contagem_geral['sem_alteracao']}"
-        )
-
-        print(
-            f"[INFO] Ignorados: "
-            f"{contagem_geral['ignorado']}"
-        )
-
-        registrar_evento(
-            "resultado_coleta",
-            cobertura_completa=cobertura_completa,
-            lojas_concluidas=lojas_concluidas,
-            total_lojas=len(lojas),
-            produtos=dict(contagem_geral),
-        )
-
-    except Exception:
-
-        if db is not None:
-
-            db.rollback()
-
-        raise
+        erros.append({
+            "loja": "Execucao geral",
+            "codigo": None,
+            "categoria": None,
+            "posicao": None,
+            "tipo": type(erro).__name__,
+            "mensagem": str(erro),
+            "status_http": getattr(
+                erro,
+                "status",
+                None,
+            ),
+            "horario": agora().isoformat(),
+        })
 
     finally:
 
-        if db is not None:
-
-            db.close()
-
-        registrar_evento(
-            "fim_execucao",
-            lojas_concluidas=lojas_concluidas,
-            total_lojas=len(lojas),
-            duracao_segundos=round(
-                time.monotonic() - inicio_execucao,
-                2,
-            ),
+        gerar_relatorio(
+            lojas,
+            resultados,
+            erros,
+            contagem,
+            inicio,
         )
+
+    return 1 if erros else 0
 
 
 # ============================================================
@@ -1790,15 +1424,9 @@ def main():
         description="Scraper Nagumo - Mercadez"
     )
 
-    parser.add_argument(
-        "--loja",
-        type=str,
-    )
+    parser.add_argument("--loja")
 
-    parser.add_argument(
-        "--loja-codigo",
-        type=str,
-    )
+    parser.add_argument("--loja-codigo")
 
     parser.add_argument(
         "--todas-lojas",
@@ -1817,10 +1445,6 @@ def main():
 
     args = parser.parse_args()
 
-    # --------------------------------------------------------
-    # DEFINIR LOJAS
-    # --------------------------------------------------------
-
     if args.todas_lojas:
 
         lojas = LOJAS
@@ -1828,10 +1452,7 @@ def main():
     elif args.loja and args.loja_codigo:
 
         lojas = [
-            {
-                "nome": args.loja,
-                "codigo": args.loja_codigo,
-            }
+            (args.loja, args.loja_codigo)
         ]
 
     else:
@@ -1841,26 +1462,19 @@ def main():
             "--loja e --loja-codigo."
         )
 
-    # --------------------------------------------------------
-    # DEFINIR CATEGORIAS
-    # --------------------------------------------------------
-
     if args.todos:
 
-        categorias = DEPARTAMENTOS
+        categorias = CATEGORIAS
 
     elif args.categorias:
 
         categorias = list(
-            dict.fromkeys(
-                args.categorias
-            )
+            dict.fromkeys(args.categorias)
         )
 
         invalidas = [
-            categoria
-            for categoria in categorias
-            if categoria not in DEPARTAMENTOS
+            c for c in categorias
+            if c not in CATEGORIAS
         ]
 
         if invalidas:
@@ -1876,47 +1490,9 @@ def main():
             "Informe --todos ou --categorias."
         )
 
-    rodar(
-        lojas,
-        categorias,
-    )
+    return rodar(lojas, categorias)
 
-
-# ============================================================
-# TRATAMENTO FINAL DE ERROS
-# ============================================================
 
 if __name__ == "__main__":
 
-    try:
-
-        main()
-
-    except AcessoRecusado as erro:
-
-        registrar_evento(
-            "acesso_recusado",
-            status=erro.status,
-            etapa=erro.etapa,
-        )
-
-        print(
-            f"[ERRO HTTP] {erro}",
-            flush=True,
-        )
-
-        print(
-            "[INFO] Lotes anteriores preservados.",
-            flush=True,
-        )
-
-        raise SystemExit(1)
-
-    except Exception as erro:
-
-        registrar_evento(
-            "erro_execucao",
-            tipo=type(erro).__name__,
-        )
-
-        raise
+    raise SystemExit(main())
