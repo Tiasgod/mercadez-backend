@@ -59,6 +59,11 @@ def buscar(
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
     com_imagem: bool = Query(default=False),
+    mercado: Optional[str] = Query(default=None, max_length=100),
+    categoria: Optional[str] = Query(default=None, max_length=100),
+    preco_min: Optional[float] = Query(default=None, ge=0),
+    preco_max: Optional[float] = Query(default=None, ge=0),
+    ordem: str = Query(default="menor", pattern="^(menor|maior|nome)$"),
     db: Session = Depends(get_db),
 ):
     """
@@ -70,7 +75,8 @@ def buscar(
         q,
         limit=limit,
         offset=offset,
-        com_imagem=com_imagem,
+        com_imagem=com_imagem, mercado=mercado, categoria=categoria,
+        preco_min=preco_min, preco_max=preco_max, ordem=ordem,
     )
 
 
@@ -86,6 +92,16 @@ def comparar(
         db,
         nome,
     )
+
+@router.get("/sugestoes", response_model=list[str])
+def sugestoes(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=30), db: Session = Depends(get_db)):
+    return produto_service.sugestoes(db, q, limit)
+
+
+@router.get("/{produto_id}/comparacao", response_model=list[ProdutoResponse])
+def comparar_por_id(produto_id: int, db: Session = Depends(get_db)):
+    return produto_service.comparar_por_id(db, produto_id)
+
 
 @router.get(
     "/{produto_id}",

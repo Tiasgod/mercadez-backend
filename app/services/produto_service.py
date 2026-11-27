@@ -1,6 +1,7 @@
 """Equivalente Python de service/ProdutoService.java"""
 
-from sqlalchemy import select, or_, and_, func
+from sqlalchemy import select, or_, and_, func, literal_column, text
+import unicodedata
 from sqlalchemy.orm import Session, joinedload
 
 from app.exceptions import (
@@ -65,10 +66,43 @@ def _filtrar_imagem(consulta, com_imagem: bool):
     return consulta
 
 
-def _extrair_termos(texto: str) -> list[str]:
-    """Separa as palavras digitadas na pesquisa."""
+# Mesma expressão usada pelos índices PostgreSQL (migração 0006).
+_ACENTOS = "áàâãäéèêëíìîïóòôõöúùûüçñýÿ"
+_ASCII = "aaaaaeeeeiiiiooooouuuucnyy"
 
-    return list(dict.fromkeys(texto.strip().lower().split()))
+
+def normalizar_busca(texto: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", texto.lower())
+                   if unicodedata.category(c) != "Mn").strip()
+
+
+def _normalizado(db, coluna):
+    if db.get_bind().dialect.name == "sqlite":
+        db.connection().connection.driver_connection.create_function(
+            "mercadez_normalizar", 1, lambda v: normalizar_busca(v or ""), deterministic=True)
+        return func.mercadez_normalizar(coluna)
+    return func.translate(func.lower(coluna), literal_column("'" + _ACENTOS + "'"),
+                          literal_column("'" + _ASCII + "'"))
+
+
+def _extrair_termos(texto: str) -> list[str]:
+    return list(dict.fromkeys(normalizar_busca(texto).split()))
+
+
+def _filtros_catalogo(db, consulta, mercado=None, categoria=None, preco_min=None, preco_max=None):
+    if mercado:
+        padrao = _criar_padrao(normalizar_busca(mercado))
+        consulta = consulta.where(or_(
+            Produto.loja_externa.has(_normalizado(db, LojaExterna.nome).like(padrao, escape="\\")),
+            Produto.afiliado.has(_normalizado(db, Afiliado.mercado).like(padrao, escape="\\"))))
+    if categoria:
+        consulta = consulta.where(_normalizado(db, Produto.tags).like(
+            _criar_padrao(normalizar_busca(categoria)), escape="\\"))
+    if preco_min is not None:
+        consulta = consulta.where(Produto.preco >= preco_min)
+    if preco_max is not None:
+        consulta = consulta.where(Produto.preco <= preco_max)
+    return consulta
 
 
 def _criar_padrao(termo: str) -> str:
@@ -200,127 +234,67 @@ def listar_por_afiliado(
     ]
 
 
-def buscar(
-    db: Session,
-    termo: str,
-    limit: int = 100,
-    offset: int = 0,
-    com_imagem: bool = False,
-) -> list[ProdutoResponse]:
-    """
-    Busca produtos por nome ou tag.
+def buscar(db: Session, termo: str, limit: int = 100, offset: int = 0,
+           com_imagem: bool = False, mercado=None, categoria=None,
+           preco_min=None, preco_max=None, ordem="menor") -> list[ProdutoResponse]:
+    nome = _normalizado(db, Produto.nome_produto)
+    tags = _normalizado(db, Produto.tags)
+    filtros = [or_(nome.like(_criar_padrao(t), escape="\\"),
+                   tags.like(_criar_padrao(t), escape="\\"))
+               for t in _extrair_termos(termo)]
+    consulta = _consulta_base().where(*filtros)
+    consulta = _filtros_catalogo(db, consulta, mercado, categoria, preco_min, preco_max)
+    consulta = _filtrar_imagem(consulta, com_imagem)
+    ordem_sql = Produto.preco.desc() if ordem == "maior" else Produto.preco.asc()
+    if ordem == "nome":
+        ordem_sql = nome.asc()
+    consulta = consulta.order_by(ordem_sql, Produto.id.asc()).offset(offset).limit(limit)
+    return [ProdutoResponse.de(p) for p in db.scalars(consulta).unique().all()]
 
-    Aceita multiplas palavras independentemente da ordem.
 
-    Exemplo:
-        arroz camil
-        camil arroz
-        arroz camil 5kg
-    """
+def comparar(db: Session, nome: str, limit: int | None = None, offset: int = 0) -> list[ProdutoResponse]:
+    # Rota legada de descoberta; a comparação exata usa o ID.
+    if not nome.strip():
+        raise NegocioException("Informe o nome do produto para comparar.")
+    filtros = [_normalizado(db, Produto.nome_produto).like(_criar_padrao(t), escape="\\")
+               for t in _extrair_termos(nome)]
+    consulta = _consulta_base().where(*filtros).order_by(Produto.preco, Produto.id).offset(offset).limit(limit)
+    return [ProdutoResponse.de(p) for p in db.scalars(consulta).unique().all()]
 
-    if not termo or not termo.strip():
-        return listar_todos(
-            db,
-            limit=limit,
-            offset=offset,
-            com_imagem=com_imagem,
-        )
 
-    termos = _extrair_termos(termo)
-
-    filtros = []
-
-    for palavra in termos:
-
-        padrao = _criar_padrao(palavra)
-
-        filtros.append(
-            or_(
-                Produto.nome_produto.ilike(
-                    padrao,
-                    escape="\\",
-                ),
-                Produto.tags.ilike(
-                    padrao,
-                    escape="\\",
-                ),
-            )
-        )
-
+def comparar_por_id(db: Session, produto_id: int) -> list[ProdutoResponse]:
+    referencia = buscar_por_id(db, produto_id)
+    # Conservador: nome completo, incluindo marca, variante, peso e volume.
+    # Não há EAN no modelo atual; não inferimos equivalência por similaridade.
     consulta = _consulta_base().where(
-        and_(*filtros)
-    )
-
-    consulta = _filtrar_imagem(
-        consulta,
-        com_imagem,
-    )
-
-    consulta = (
-        consulta
-        .order_by(
-            Produto.preco.asc(),
-            Produto.id.asc(),
-        )
-        .offset(offset)
-        .limit(limit)
-    )
-
-    produtos = db.scalars(
-        consulta
-    ).unique().all()
-
-    return [
-        ProdutoResponse.de(p)
-        for p in produtos
-    ]
+        func.trim(_normalizado(db, Produto.nome_produto)) == normalizar_busca(referencia.nomeProduto),
+        Produto.preco > 0).order_by(Produto.preco, Produto.id)
+    lojas = {}
+    for p in db.scalars(consulta).unique().all():
+        chave = (p.loja_externa_id, p.afiliado_id)
+        lojas.setdefault(chave, ProdutoResponse.de(p))
+    return list(lojas.values())
 
 
-def comparar(
-    db: Session,
-    nome: str,
-) -> list[ProdutoResponse]:
-    """
-    Compara precos de produtos em diferentes supermercados.
-
-    Aceita multiplas palavras independentemente da ordem.
-    Ordena os resultados do menor para o maior preco.
-    """
-
-    if not nome or not nome.strip():
-        raise NegocioException(
-            "Informe o nome do produto para comparar."
-        )
-
-    termos = _extrair_termos(nome)
-
-    filtros = [
-        Produto.nome_produto.ilike(
-            _criar_padrao(palavra),
-            escape="\\",
-        )
-        for palavra in termos
-    ]
-
-    consulta = (
-        _consulta_base()
-        .where(
-            and_(*filtros)
-        )
-        .order_by(
-            Produto.preco.asc(),
-            Produto.id.asc(),
-        )
-    )
-
-    produtos = db.scalars(
-        consulta
-    ).unique().all()
-
-    return [
-        ProdutoResponse.de(p)
-        for p in produtos
-    ]
+def sugestoes(db: Session, termo: str, limit: int = 10) -> list[str]:
+    if len(termo.strip()) < 2:
+        return []
+    nome = _normalizado(db, Produto.nome_produto)
+    filtros = [nome.like(_criar_padrao(t), escape="\\") for t in _extrair_termos(termo)]
+    consulta = _consulta_base().with_only_columns(Produto.nome_produto).where(*filtros).distinct().order_by(Produto.nome_produto).limit(limit)
+    exatas = list(db.scalars(consulta).all())
+    # Sugestões aproximadas apenas quando pg_trgm estiver instalado.
+    # Nunca misturamos variantes na comparação por ID.
+    if exatas or db.get_bind().dialect.name != "postgresql":
+        return exatas
+    if not db.scalar(text("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm')")):
+        return []
+    termo_normalizado = normalizar_busca(termo)
+    relevancia = func.word_similarity(termo_normalizado, nome)
+    candidatos = (_consulta_base().with_only_columns(Produto.nome_produto, relevancia.label("relevancia"))
+        .where(nome.op("%>")(termo_normalizado), relevancia >= 0.5)
+        .distinct().order_by(relevancia.desc(), Produto.nome_produto).limit(limit))
+    return [row[0] for row in db.execute(candidatos).all()]
 
 
 def atualizar(

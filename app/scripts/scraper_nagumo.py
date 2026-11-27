@@ -604,6 +604,7 @@ def _salvar_produto(
     produto_nagumo: dict,
     produtos_existentes: dict[str, Produto],
     historicos_criados: set[tuple[int, Decimal]],
+    categoria: str | None = None,
 ) -> str:
 
     nome = (
@@ -647,6 +648,7 @@ def _salvar_produto(
 
         produto = Produto(
             nome_produto=nome,
+            tags=categoria,
             preco=preco,
             quantidade=0,
             origem="EXTERNO",
@@ -673,6 +675,9 @@ def _salvar_produto(
         )
 
         return "novo"
+
+    if categoria and not produto.tags:
+        produto.tags = categoria
 
     # Atualiza as fotos mesmo quando o preco nao mudou.
     # Se a coleta atual nao trouxer imagens, preservamos as anteriores.
@@ -890,6 +895,7 @@ def _processar_loja(
                 produto_nagumo=produto_nagumo,
                 produtos_existentes=produtos_existentes,
                 historicos_criados=historicos_criados,
+                categoria=cgid,
             )
 
             total_processados += 1
@@ -1325,19 +1331,31 @@ def main() -> None:
     # --------------------------------------------------------
 
     lojas_padrao = [
-        {
-            "nome": "Nagumo Poa",
-            "codigo": "22",
-        },
-        {
-            "nome": "Nagumo Poa_Kemel",
-            "codigo": "45",
-        },
-        {
-            "nome": "Nagumo Itaqua",
-            "codigo": "30",
-        },
-    ]
+    # POA
+    {"nome": "Nagumo Poa", "codigo": "22"},
+    {"nome": "Nagumo Poa_Kemel", "codigo": "45"},
+
+    # SUZANO
+    {"nome": "Nagumo Suzano", "codigo": "27"},
+    {"nome": "Nagumo_Suzano_Dona_Benta", "codigo": "23"},
+
+    # ITAQUAQUECETUBA
+    {"nome": "Nagumo Itaqua", "codigo": "30"},
+    {"nome": "Nagumo_Itaqua_Vila_Zeferina", "codigo": "39"},
+
+    # MOGI DAS CRUZES
+    {"nome": "Nagumo_Mogi_Alto_Ipiranga", "codigo": "52"},
+
+    # GUARULHOS
+    {"nome": "Nagumo_Guarulhos_Merc_Bonsucesso", "codigo": "41"},
+    {"nome": "Nagumo_Guarulhos_Cumbica", "codigo": "42"},
+    {"nome": "Nagumo_Guarulhos_Shopping_Pimentas", "codigo": "49"},
+    {"nome": "Nagumo_Guarulhos_Continental", "codigo": "51"},
+    {"nome": "Nagumo_Guarulhos_Bonsucesso", "codigo": "55"},
+    {"nome": "Nagumo_Guarulhos_Elenco", "codigo": "56"},
+    {"nome": "Nagumo_Guarulhos_Anel_Viario", "codigo": "57"},
+    {"nome": "Nagumo_Guarulhos_Alvorada", "codigo": "61"},
+]
 
     # --------------------------------------------------------
     # Definir lojas

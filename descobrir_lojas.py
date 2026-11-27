@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 import json
+import unicodedata
 
 
 URL = (
@@ -11,8 +12,39 @@ URL = (
 )
 
 
+CIDADES = [
+    "suzano",
+    "mogi das cruzes",
+    "mogi",
+    "poa",
+    "itaquaquecetuba",
+    "itaqua",
+    "ferraz de vasconcelos",
+    "ferraz",
+    "aruja",
+    "guarulhos",
+    "guararema",
+    "santa isabel",
+    "biritiba mirim",
+    "salesopolis",
+]
+
+
+def normalizar(texto):
+    return "".join(
+        caractere
+        for caractere in unicodedata.normalize(
+            "NFD", texto.lower()
+        )
+        if unicodedata.category(caractere) != "Mn"
+    )
+
+
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch(headless=True)
+
+    browser = playwright.chromium.launch(
+        headless=True
+    )
 
     context = browser.new_context(
         locale="pt-BR",
@@ -50,9 +82,13 @@ with sync_playwright() as playwright:
 
     print("HTTP:", resposta["status"])
 
-    dados = json.loads(resposta["texto"])
+    if resposta["status"] != 200:
+        browser.close()
+        raise RuntimeError(
+            "Erro ao consultar lojas do Nagumo."
+        )
 
-    print("\\nLOJAS DE ITAQUAQUECETUBA:\\n")
+    dados = json.loads(resposta["texto"])
 
     if isinstance(dados, list):
         lojas = dados
@@ -64,13 +100,25 @@ with sync_playwright() as playwright:
             or []
         )
 
-    for loja in lojas:
-        texto = json.dumps(
-            loja,
-            ensure_ascii=False,
-        ).lower()
+    lojas_encontradas = []
 
-        if "itaqua" in texto:
+    print("\n" + "=" * 65)
+    print("LOJAS NAGUMO - ALTO TIETE E REGIAO")
+    print("=" * 65)
+
+    for loja in lojas:
+
+        texto = normalizar(
+            json.dumps(
+                loja,
+                ensure_ascii=False,
+            )
+        )
+
+        if any(cidade in texto for cidade in CIDADES):
+
+            lojas_encontradas.append(loja)
+
             print(
                 json.dumps(
                     loja,
@@ -78,5 +126,29 @@ with sync_playwright() as playwright:
                     indent=2,
                 )
             )
+
+            print("-" * 65)
+
+    print("\n" + "=" * 65)
+    print("RESULTADO FINAL")
+    print("=" * 65)
+
+    print(f"Total de lojas consultadas: {len(lojas)}")
+    print(f"Lojas da regiao: {len(lojas_encontradas)}")
+
+    with open(
+        "lojas_nagumo_regiao.json",
+        "w",
+        encoding="utf-8",
+    ) as arquivo:
+
+        json.dump(
+            lojas_encontradas,
+            arquivo,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    print("\n[OK] Arquivo lojas_nagumo_regiao.json criado.")
 
     browser.close()
