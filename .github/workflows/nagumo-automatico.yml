@@ -116,6 +116,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: diagnostico-nagumo
-          path: diagnostico/relatorio.txt
+          path: diagnostico/
           retention-days: 7
           if-no-files-found: warn
