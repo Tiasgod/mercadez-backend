@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+from datetime import datetime, timezone
+from collections import Counter
+from sqlalchemy import text
 import json
 import re
 import time
@@ -35,21 +39,76 @@ MAX_TENTATIVAS_SELECAO_LOJA = 3
 INTERVALO_RETRY_LOJA_SEGUNDOS = 3.0
 
 TAMANHO_PAGINA = 40
+MAX_PAGINAS_CATEGORIA = 1500
 
 LATITUDE = "-23.5325875"
 LONGITUDE = "-46.335124"
 
 
 class AcessoRecusado(RuntimeError):
-    """Interrompe a coleta sem tentar contornar a recusa do servidor."""
+    """Uma recusa impede novas consultas ate liberacao administrativa."""
+    def __init__(self, status: int, etapa: str):
+        self.status = status
+        self.etapa = etapa
+        super().__init__(f"HTTP {status} em {etapa}. Coleta suspensa.")
 
 
-def verificar_acesso(status: int, etapa: str) -> None:
+def verificar_acesso(status: int, etapa: str, headers=None) -> None:
+    # Nunca imprime cookies, tokens, corpo ou todos os headers.
+    headers = headers or {}
+    seguros = {k: str(headers[k])[:160] for k in
+               ("content-type", "retry-after", "x-request-id", "cf-ray") if k in headers}
+    print(json.dumps({"evento": "http", "utc": datetime.now(timezone.utc).isoformat(),
+                      "etapa": etapa, "status": status, "headers": seguros}, ensure_ascii=False))
     if status in (403, 429):
-        raise AcessoRecusado(
-            f"HTTP {status} em {etapa}. Coleta suspensa; "
-            "verifique a autorização e os limites com o Nagumo."
-        )
+        raise AcessoRecusado(status, etapa)
+
+
+def verificar_pausa(db):
+    estado = db.execute(text("SELECT status_http, etapa FROM nagumo_coleta_pausa WHERE id = 1")).first()
+    db.commit()
+    if estado:
+        raise RuntimeError(f"Coleta bloqueada administrativamente: HTTP {estado[0]} em {estado[1]}. "
+                           "Confirme os limites e a liberacao com o Nagumo antes de retomar.")
+
+
+def registrar_pausa(db, erro):
+    db.rollback()
+    db.execute(text("""INSERT INTO nagumo_coleta_pausa (id, status_http, etapa, registrado_em)
+        VALUES (1, :status, :etapa, :agora)
+        ON CONFLICT (id) DO UPDATE SET status_http=excluded.status_http,
+        etapa=excluded.etapa, registrado_em=excluded.registrado_em"""),
+        {"status": erro.status, "etapa": erro.etapa, "agora": datetime.now(timezone.utc)})
+    db.commit()
+
+
+def ler_checkpoint(db, codigo, categoria):
+    row = db.execute(text("""SELECT proxima_posicao, assinaturas, concluida
+        FROM nagumo_coleta_checkpoint WHERE loja_codigo=:codigo AND categoria=:categoria"""),
+        {"codigo": codigo, "categoria": categoria}).first()
+    return (row[0], set(json.loads(row[1])), bool(row[2])) if row else (0, set(), False)
+
+
+def salvar_checkpoint(db, codigo, categoria, posicao, assinaturas, concluida):
+    db.execute(text("""INSERT INTO nagumo_coleta_checkpoint
+        (loja_codigo, categoria, proxima_posicao, assinaturas, concluida, atualizado_em)
+        VALUES (:codigo, :categoria, :posicao, :assinaturas, :concluida, :agora)
+        ON CONFLICT (loja_codigo, categoria) DO UPDATE SET
+        proxima_posicao=excluded.proxima_posicao, assinaturas=excluded.assinaturas,
+        concluida=excluded.concluida, atualizado_em=excluded.atualizado_em"""),
+        {"codigo": codigo, "categoria": categoria, "posicao": posicao,
+         "assinaturas": json.dumps(sorted(assinaturas)), "concluida": concluida,
+         "agora": datetime.now(timezone.utc)})
+
+
+def assinatura_pagina(produtos):
+    # IDs originais quando presentes; fallback conservador para nomes completos.
+    identidades = []
+    for produto in produtos:
+        ident = produto.get("productID") or produto.get("productId") or produto.get("id") or produto.get("ean")
+        identidades.append("id:" + str(ident) if ident else
+                           "nome:" + chave_produto(str(produto.get("productName") or "")))
+    return hashlib.sha256(json.dumps(sorted(identidades), ensure_ascii=False).encode()).hexdigest()
 
 
 def chave_produto(nome: str) -> str:
@@ -99,7 +158,7 @@ def _abrir_nagumo(page: Page) -> None:
             "a página inicial."
         )
 
-    verificar_acesso(resposta.status, "pagina inicial")
+    verificar_acesso(resposta.status, "pagina inicial", resposta.headers)
 
     if resposta.status >= 400:
         raise RuntimeError(
@@ -157,7 +216,10 @@ def _tentar_selecionar_loja(
 
                 return {
                     status: resposta.status,
-                    texto: texto
+                    texto: texto,
+                    headers: {"content-type": resposta.headers.get("content-type"),
+                              "retry-after": resposta.headers.get("retry-after"),
+                              "x-request-id": resposta.headers.get("x-request-id")}
                 };
 
             } catch (erro) {
@@ -177,14 +239,14 @@ def _tentar_selecionar_loja(
     )
 
     status = resultado["status"]
-    verificar_acesso(status, f"selecao da loja {loja_codigo}")
+    verificar_acesso(status, f"selecao da loja {loja_codigo}", resultado.get("headers"))
     texto = resultado["texto"]
 
     if status != 200:
 
         return (
             False,
-            f"HTTP {status}. Resposta: {texto[:1000]}"
+            f"HTTP {status}."
         )
 
     try:
@@ -195,15 +257,14 @@ def _tentar_selecionar_loja(
 
         return (
             False,
-            "Nagumo retornou uma resposta que não é JSON. "
-            f"Resposta: {texto[:1000]}"
+            "Nagumo retornou uma resposta que não é JSON."
         )
 
     if not dados.get("success"):
 
         return (
             False,
-            f"Nagumo não confirmou a seleção: {dados}"
+            "Nagumo não confirmou a seleção."
         )
 
     return True, ""
@@ -395,104 +456,34 @@ def _descobrir_departamentos(
 # EXTRAIR PRODUTOS DO JSON
 # ============================================================
 
-def _extrair_produtos_da_pagina(
-    resposta_texto: str,
-) -> list[dict]:
-
+def _extrair_produtos_da_pagina(resposta_texto: str) -> list[dict]:
     try:
-
         dados = json.loads(resposta_texto)
-
-    except json.JSONDecodeError:
-
-        return []
-
-    produtos = dados.get(
-        "productsSearchResult",
-        [],
-    )
-
-    if not isinstance(produtos, list):
-        return []
-
+    except json.JSONDecodeError as erro:
+        raise RuntimeError("Resposta de catalogo nao e JSON; coleta interrompida.") from erro
+    produtos = dados.get("productsSearchResult") if isinstance(dados, dict) else None
+    if not isinstance(produtos, list) or any(not isinstance(p, dict) for p in produtos):
+        raise RuntimeError("Formato inesperado do catalogo; coleta interrompida.")
+    if produtos and not any(isinstance(p.get("productName"), str) and p["productName"].strip() for p in produtos):
+        raise RuntimeError("Pagina sem identificacao de produtos; coleta interrompida.")
     return produtos
 
 
-# ============================================================
-# BUSCAR UMA CATEGORIA COMPLETA
-# ============================================================
-
-def _buscar_categoria(
-    context: BrowserContext,
-    cgid: str,
-) -> list[dict]:
-
-    todos: list[dict] = []
-
-    inicio = 0
-
-    while True:
-
-        parametros = urlencode(
-            {
-                "cgid": cgid,
-                "start": inicio,
-                "sz": TAMANHO_PAGINA,
-            }
-        )
-
-        url = (
-            f"{BASE}/on/demandware.store/"
-            "Sites-Nagumo-Site/"
-            "pt_BR/"
-            f"Search-UpdateGrid?{parametros}"
-        )
-
-        resposta = context.request.get(
-            url,
-            headers={
-                "Accept": "*/*",
-                "Referer": f"{BASE}/",
-            },
-            timeout=60000,
-        )
-
-        verificar_acesso(resposta.status, f"categoria {cgid}")
-
+def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> list[dict]:
+    parametros = urlencode({"cgid": cgid, "start": inicio, "sz": TAMANHO_PAGINA})
+    url = (f"{BASE}/on/demandware.store/Sites-Nagumo-Site/pt_BR/Search-UpdateGrid?{parametros}")
+    resposta = context.request.get(url, headers={"Accept": "*/*", "Referer": f"{BASE}/"}, timeout=60000)
+    try:
+        verificar_acesso(resposta.status, f"categoria {cgid}, posicao {inicio}", resposta.headers)
         if resposta.status >= 400:
-
-            raise RuntimeError(
-                f"Nagumo retornou HTTP {resposta.status} "
-                f"ao buscar a categoria '{cgid}'."
-            )
-
-        produtos_pagina = _extrair_produtos_da_pagina(
-            resposta.text()
-        )
-
-        if not produtos_pagina:
-            break
-
-        todos.extend(
-            produtos_pagina
-        )
-
-        print(
-            f"[INFO] Categoria '{cgid}': "
-            f"posição {inicio} -> "
-            f"{len(produtos_pagina)} produtos."
-        )
-
-        if len(produtos_pagina) < TAMANHO_PAGINA:
-            break
-
-        inicio += TAMANHO_PAGINA
-
-        time.sleep(
-            INTERVALO_ENTRE_REQUISICOES_SEGUNDOS
-        )
-
-    return todos
+            raise RuntimeError(f"HTTP {resposta.status} na categoria {cgid}, posicao {inicio}")
+        produtos = _extrair_produtos_da_pagina(resposta.text())
+        if len(produtos) > TAMANHO_PAGINA:
+            raise RuntimeError("Resposta excede o tamanho de pagina solicitado.")
+        print(f"[INFO] Categoria '{cgid}': posicao {inicio} -> {len(produtos)} produtos.")
+        return produtos
+    finally:
+        resposta.dispose()
 
 
 # ============================================================
@@ -738,18 +729,7 @@ def _salvar_produto(
         preco,
     )
 
-    if chave_historico not in historicos_criados:
-
-        db.add(
-            HistoricoPreco(
-                produto_id=produto.id,
-                preco=preco,
-            )
-        )
-
-        historicos_criados.add(
-            chave_historico
-        )
+    db.add(HistoricoPreco(produto_id=produto.id, preco=preco))
 
     return "preco_alterado"
 
@@ -838,225 +818,46 @@ def _processar_loja(
         )
     )
 
-    historicos_criados: set[
-        tuple[int, Decimal]
-    ] = set()
-
-    total_processados = 0
-    total_novos = 0
-    total_precos_alterados = 0
-    total_sem_alteracao = 0
-    total_ignorados = 0
-    total_categorias = 0
-
-    # --------------------------------------------------------
-    # Percorrer categorias
-    # --------------------------------------------------------
-
-    for numero_categoria, cgid in enumerate(
-        categorias,
-        start=1,
-    ):
-
-        print()
-        print(
-            f"[INFO] Categoria "
-            f"{numero_categoria}/{len(categorias)}: "
-            f"'{cgid}'"
-        )
-
-        try:
-
-            produtos_nagumo = _buscar_categoria(
-                context=context,
-                cgid=cgid,
-            )
-
-        except AcessoRecusado:
-            raise
-        except Exception as erro:
-
-            print(
-                f"[ERRO] Falha na categoria "
-                f"'{cgid}': {erro}"
-            )
-
-            db.rollback()
-            # A loja pode ter sido criada na transacao revertida.
-            loja = db.query(LojaExterna).filter_by(nome=loja_nome).one_or_none()
-            if loja is None:
-                loja = LojaExterna(nome=loja_nome, dominio="www.nagumo.com.br", plataforma="SFCC")
-                db.add(loja)
-                db.flush()
-
-            # ------------------------------------------------
-            # Importante:
-            # o mapa em memória pode conter objetos que foram
-            # descartados pelo rollback. Recarregamos para
-            # manter o estado consistente.
-            # ------------------------------------------------
-
-            produtos_existentes = (
-                _carregar_produtos_da_loja(
-                    db=db,
-                    loja_id=loja.id,
-                )
-            )
-
+    db.commit()
+    contagem = Counter()
+    for cgid in categorias:
+        inicio, assinaturas, concluida = ler_checkpoint(db, loja_codigo, cgid)
+        db.commit()
+        if concluida:
+            print(f"[INFO] Categoria {cgid} ja concluida neste ciclo.")
             continue
-
-        print(
-            f"[INFO] Encontrados "
-            f"{len(produtos_nagumo)} produtos "
-            f"em '{cgid}'."
-        )
-
-        novos_categoria = 0
-        alterados_categoria = 0
-        iguais_categoria = 0
-        ignorados_categoria = 0
-
-        # ----------------------------------------------------
-        # Salvar produtos
-        # ----------------------------------------------------
-
-        for produto_nagumo in produtos_nagumo:
-
-            resultado = _salvar_produto(
-                db=db,
-                loja=loja,
-                produto_nagumo=produto_nagumo,
-                produtos_existentes=produtos_existentes,
-                historicos_criados=historicos_criados,
-                categoria=cgid,
-            )
-
-            total_processados += 1
-
-            if resultado == "novo":
-
-                total_novos += 1
-                novos_categoria += 1
-
-            elif resultado == "preco_alterado":
-
-                total_precos_alterados += 1
-                alterados_categoria += 1
-
-            elif resultado == "sem_alteracao":
-
-                total_sem_alteracao += 1
-                iguais_categoria += 1
-
-            else:
-
-                total_ignorados += 1
-                ignorados_categoria += 1
-
-        # ----------------------------------------------------
-        # Commit por categoria
-        # ----------------------------------------------------
-
-        try:
-
+        while True:
+            if inicio // TAMANHO_PAGINA >= MAX_PAGINAS_CATEGORIA:
+                raise RuntimeError(f"Limite de paginacao atingido em {cgid}; revisar catalogo.")
+            produtos = _buscar_pagina(context, cgid, inicio)
+            assinatura = assinatura_pagina(produtos) if produtos else None
+            if assinatura and assinatura in assinaturas:
+                raise RuntimeError(f"Pagina repetida em {cgid}, posicao {inicio}; revisar paginacao.")
+            lote = Counter()
+            for item in produtos:
+                resultado = _salvar_produto(db, loja, item, produtos_existentes, set(), cgid)
+                lote[resultado] += 1
+            if assinatura:
+                assinaturas.add(assinatura)
+            concluida = len(produtos) < TAMANHO_PAGINA
+            proxima = inicio + len(produtos)
+            # Dados e checkpoint na mesma transacao: ambos gravados ou nenhum.
+            salvar_checkpoint(db, loja_codigo, cgid, proxima, assinaturas, concluida)
             db.commit()
-
-        except AcessoRecusado:
-            raise
-        except Exception as erro:
-
-            db.rollback()
-
-            print(
-                f"[ERRO] Falha ao salvar categoria "
-                f"'{cgid}': {erro}"
-            )
-
-            produtos_existentes = (
-                _carregar_produtos_da_loja(
-                    db=db,
-                    loja_id=loja.id,
-                )
-            )
-
-            continue
-
-        total_categorias += 1
-        print(
-            f"[OK] Categoria '{cgid}' salva."
-        )
-
-        print(
-            f"     Novos: {novos_categoria}"
-        )
-
-        print(
-            f"     Preços alterados: "
-            f"{alterados_categoria}"
-        )
-
-        print(
-            f"     Sem alteração: "
-            f"{iguais_categoria}"
-        )
-
-        print(
-            f"     Ignorados: "
-            f"{ignorados_categoria}"
-        )
-
-        # Pequena pausa entre categorias.
-        time.sleep(
-            INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS
-        )
-
-    # --------------------------------------------------------
-    # Resultado da loja
-    # --------------------------------------------------------
-
-    print()
-    print(
-        f"[OK] Loja {loja_codigo} finalizada."
-    )
-
-    print(
-        f"[INFO] Categorias gravadas: "
-        f"{total_categorias}/{len(categorias)}"
-    )
-    if total_categorias != len(categorias):
-        print("[AVISO] Coleta parcial: algumas categorias falharam.")
-
-    print(
-        f"[INFO] Produtos analisados: "
-        f"{total_processados}"
-    )
-
-    print(
-        f"[INFO] Produtos novos: "
-        f"{total_novos}"
-    )
-
-    print(
-        f"[INFO] Preços alterados: "
-        f"{total_precos_alterados}"
-    )
-
-    print(
-        f"[INFO] Preços sem alteração: "
-        f"{total_sem_alteracao}"
-    )
-
-    print(
-        f"[INFO] Produtos ignorados: "
-        f"{total_ignorados}"
-    )
-
-    return (
-        total_processados,
-        page,
-        context,
-        browser,
-    )
+            contagem.update(lote)
+            print(f"[OK] Lote gravado: loja {loja_codigo}, {cgid}, posicao {inicio}, {dict(lote)}")
+            if concluida:
+                break
+            inicio = proxima
+            time.sleep(INTERVALO_ENTRE_REQUISICOES_SEGUNDOS)
+        time.sleep(INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS)
+    # Somente quando todas as categorias solicitadas terminam: novo ciclo na proxima execucao.
+    for cgid in categorias:
+        db.execute(text("DELETE FROM nagumo_coleta_checkpoint WHERE loja_codigo=:codigo AND categoria=:categoria"),
+                   {"codigo": loja_codigo, "categoria": cgid})
+    db.commit()
+    print(f"[OK] Loja {loja_codigo} finalizada. Lotes desta execucao: {dict(contagem)}")
+    return sum(contagem.values()), page, context, browser
 
 
 # ============================================================
@@ -1069,13 +870,17 @@ def rodar(
     todos: bool = False,
 ) -> None:
 
-    playwright = sync_playwright().start()
+    playwright = None
 
     browser = None
     context = None
     db = None
 
     try:
+        db = SessionLocal()
+        db.expire_on_commit = False
+        verificar_pausa(db)
+        playwright = sync_playwright().start()
 
         # ----------------------------------------------------
         # Criar navegador
@@ -1096,8 +901,6 @@ def rodar(
         # ----------------------------------------------------
         # Banco
         # ----------------------------------------------------
-
-        db = SessionLocal()
 
         # ----------------------------------------------------
         # Definir categorias
@@ -1170,72 +973,9 @@ def rodar(
                 total_geral += total
                 lojas_concluidas += 1
 
-            except AcessoRecusado:
+            except Exception:
+                # Qualquer coleta incompleta deve falhar, inclusive na matriz do GitHub.
                 raise
-            except Exception as erro:
-
-                lojas_com_erro += 1
-
-                print()
-                print(
-                    "=" * 70
-                )
-                print(
-                    f"[ERRO] Não foi possível processar "
-                    f"a loja {loja['nome']} "
-                    f"(código {loja['codigo']})."
-                )
-                print(
-                    f"[ERRO] {erro}"
-                )
-                print(
-                    "[INFO] Continuando para a próxima loja..."
-                )
-                print(
-                    "=" * 70
-                )
-
-                # ------------------------------------------------
-                # Tenta limpar a sessão para a próxima loja.
-                # ------------------------------------------------
-
-                try:
-
-                    if context is not None:
-                        context.close()
-
-                except Exception:
-                    pass
-
-                context = browser.new_context(
-                    locale="pt-BR",
-                    timezone_id="America/Sao_Paulo",
-
-                    extra_http_headers={
-                        "Accept-Language": (
-                            "pt-BR,pt;q=0.9,"
-                            "en-US;q=0.8,en;q=0.7"
-                        ),
-                    },
-                )
-
-                page = context.new_page()
-
-                try:
-
-                    _abrir_nagumo(page)
-
-                except AcessoRecusado:
-                    raise
-                except Exception as erro:
-
-                    print(
-                        "[AVISO] Não foi possível "
-                        "reabrir o Nagumo: "
-                        f"{erro}"
-                    )
-
-                continue
 
         # ----------------------------------------------------
         # Resultado final
@@ -1274,11 +1014,13 @@ def rodar(
             "históricos desnecessários."
         )
 
+    except AcessoRecusado as erro:
+        if db is not None:
+            registrar_pausa(db, erro)
+        raise
     except Exception:
-
         if db is not None:
             db.rollback()
-
         raise
 
     finally:
@@ -1300,7 +1042,8 @@ def rodar(
             except Exception:
                 pass
 
-        playwright.stop()
+        if playwright is not None:
+            playwright.stop()
 
 
 # ============================================================
@@ -1336,7 +1079,7 @@ def main() -> None:
         action="store_true",
         help=(
             "Processa automaticamente "
-            "as três lojas configuradas."
+            "as quinze lojas configuradas."
         ),
     )
 
