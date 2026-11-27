@@ -472,7 +472,7 @@ def _conflitos_pagina(produtos):
     return conflitos
 
 
-def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> PaginaCatalogo:
+def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int, loja_codigo: str | None = None) -> PaginaCatalogo:
     if inicio < 0:
         raise ValueError(f"Posição inválida: {inicio}")
     tamanho = TAMANHO_PAGINA
@@ -486,7 +486,19 @@ def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> PaginaCat
         verificar_acesso(resposta.status, f"categoria {cgid}, posicao {inicio}", resposta.headers)
         bruto = resposta.text()
         produtos = _extrair_produtos_da_pagina(bruto)
-        total = _total_informado(json.loads(bruto))
+        dados = json.loads(bruto)
+        for objeto in (dados, dados.get("productSearch")):
+            if not isinstance(objeto, dict):
+                continue
+            categoria_retornada = objeto.get("cgid") or objeto.get("categoryId")
+            if isinstance(categoria_retornada, str) and categoria_retornada and categoria_retornada != cgid:
+                raise RuntimeError("Categoria retornada diverge da solicitada.")
+            codigo = objeto.get("storeId")
+            if loja_codigo and isinstance(codigo, (str, int)) and not isinstance(codigo, bool):
+                codigo = str(codigo).strip()
+                if re.fullmatch(r"(?:M_)?[0-9]+", codigo, re.I) and int(codigo.split("_")[-1]) != int(loja_codigo):
+                    raise RuntimeError("Filial retornada diverge da solicitada.")
+        total = _total_informado(dados)
         if len(produtos) > tamanho:
             raise RuntimeError("Resposta excede o tamanho de pagina solicitado.")
         print(f"[INFO] Categoria '{cgid}': posicao {inicio} -> {len(produtos)} produtos.")
@@ -818,6 +830,7 @@ def _processar_loja(
     db.commit()
     unidades = consultas if consultas is not None else {c:c for c in categorias}
     chaves = {}
+    assinaturas_outras = {}
     for caminho, cgid in unidades.items():
         chave = ("v5:" + hashlib.sha256(json.dumps([caminho,cgid], ensure_ascii=False).encode()).hexdigest()) if consultas is not None else cgid
         chaves[caminho] = chave
@@ -830,8 +843,15 @@ def _processar_loja(
             continue
         while True:
             progresso["posicao"] = inicio
-            produtos = _buscar_pagina(context, cgid, inicio)
+            produtos = _buscar_pagina(context, cgid, inicio, loja_codigo)
+            if consultas is not None and inicio == 0 and not produtos:
+                raise RuntimeError(f"Subcategoria {cgid} vazia: identificador/cobertura inconclusivos; sem checkpoint novo.")
             proxima, assinatura, concluida = _validar_paginacao(produtos, inicio, assinaturas)
+            if assinatura and consultas is not None:
+                outra = assinaturas_outras.get(assinatura)
+                if outra is not None and outra != caminho:
+                    raise RuntimeError(f"Pagina identica em {outra} e {caminho}; verificar identificadores antes de prosseguir.")
+                assinaturas_outras[assinatura] = caminho
             conflitos = _conflitos_pagina(produtos)
             lote = Counter()
             historicos_lote = set()
@@ -900,7 +920,7 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
             try:
                 page = context.new_page()
                 _abrir_nagumo(page)
-                categorias_processar = _descobrir_departamentos(page) if todos else list(dict.fromkeys(categorias or []))
+                categorias_processar = list(dict.fromkeys(categorias or [])) if consultas_por_filial is not None else (_descobrir_departamentos(page) if todos else list(dict.fromkeys(categorias or [])))
                 if not categorias_processar and consultas_por_filial is None:
                     raise ValueError("Nenhuma categoria selecionada.")
                 for loja in lojas:
@@ -918,12 +938,12 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
                         status = "consultas_concluidas" if consultas_por_filial is not None else "concluida"
                     except Exception as erro:
                         registrar_erro(erro, loja, progresso)
-                        parar = isinstance(erro, AcessoRecusado)
+                        parar = isinstance(erro, AcessoRecusado) or consultas_por_filial is not None
                         if db is not None:
                             db.rollback()
                         print("[INFO] Lotes anteriores preservados.", flush=True)
                         if parar:
-                            print("[ERRO] Recusa HTTP; consultas encerradas.", flush=True)
+                            print("[ERRO] Falha na coleta; consultas encerradas.", flush=True)
                         else:
                             print("[INFO] Falha técnica; próxima loja.", flush=True)
                     finally:
@@ -944,7 +964,7 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
         processadas = {r["codigo"] for r in resultados}
         pendentes = [l for l in lojas if l["codigo"] not in processadas]
         concluidas = sum(r["status"] in ("concluida", "consultas_concluidas") for r in resultados)
-        relatorio = {"escopo": "consultas autorizadas, cobertura integral nao comprovada" if consultas_por_filial is not None else "departamentos originais", "lojas_programadas": len(lojas), "lojas_processadas": len(resultados),
+        relatorio = {"escopo": "subcategorias do catalogo, cobertura integral nao comprovada" if consultas_por_filial is not None else "departamentos originais", "identificadores_e_filiais_independentemente_validados": False, "lojas_programadas": len(lojas), "lojas_processadas": len(resultados),
                      "lojas_concluidas": concluidas, "lojas_com_falhas": len(resultados)-concluidas,
                      "lojas_nao_processadas": len(pendentes), "pendentes": pendentes,
                      "produtos_analisados": sum(contagem.values()), "produtos": dict(contagem),
@@ -968,70 +988,31 @@ ACOUGUE_CANDIDATOS = (
 )
 
 
-def testar_segmentado(arquivo):
-    """Exercita o coletor com respostas simuladas; sem rede ou banco."""
-    from urllib.parse import parse_qs
-    mapa = carregar_catalogo(arquivo)
-    caminhos = ["acougue/" + p for p in ACOUGUE_CANDIDATOS]
-    if set(caminhos) != set(planejar_catalogo(mapa, ["acougue"])["folhas_candidatas"]):
-        raise RuntimeError("Catalogo diverge das subcategorias esperadas")
-    class Resposta:
-        headers = {"content-type": "application/json"}
-        def __init__(self, dados, status=200):
-            self.dados, self.status = dados, status
-        def text(self):
-            return json.dumps(self.dados)
-        def dispose(self):
-            pass
-    class Simulador:
-        def __init__(self):
-            self.request = self
-            self.status = 200
-        def get(self, url, **kwargs):
-            q = parse_qs(urlparse(url).query)
-            inicio, tamanho = int(q["start"][0]), int(q["sz"][0])
-            cgid = q["cgid"][0]
-            if self.status != 200:
-                return Resposta({}, self.status)
-            itens = [{"productID": f"{cgid}-{i}", "productName": f"Simulado {i}",
-                      "price": {"sales": {"value": 10.0}}}
-                     for i in range(inicio, min(inicio+tamanho, 45))]
-            return Resposta({"productsSearchResult": itens, "total": 45})
-    contexto = Simulador()
-    resultados = []
-    for caminho in caminhos:
-        candidato = caminho.rsplit("/", 1)[1]
-        pagina = _buscar_pagina(contexto, candidato, 0)
-        pos, assinatura, fim = _validar_paginacao(pagina, 0, set())
-        if (pos, fim) != (40, False):
-            raise RuntimeError("Primeira pagina invalida")
-        segunda = _buscar_pagina(contexto, candidato, pos)
-        final, _, fim = _validar_paginacao(segunda, pos, {assinatura})
-        if (final, fim) != (45, True):
-            raise RuntimeError("Segunda pagina invalida")
-        try:
-            _validar_paginacao(pagina, 0, {assinatura})
-        except RuntimeError:
-            pass
-        else:
-            raise RuntimeError("Pagina repetida nao detectada")
-        resultados.append({"hierarquia": caminho, "cgid_candidato": candidato,
-                           "produtos_simulados": final, "paginas": 2})
-    contexto.status = 403
-    try:
-        _buscar_pagina(contexto, "simulado", 0)
-    except AcessoRecusado:
-        pass
-    else:
-        raise RuntimeError("HTTP 403 simulado nao interrompeu a consulta")
-    relatorio = {"escopo": "teste offline simulado", "loja_referencia": "22",
-                 "subcategorias": resultados, "teste_http_403": "aprovado",
-                 "teste_pagina_repetida": "aprovado", "identificadores_validados": 0,
-                 "rede_utilizada": False, "banco_utilizado": False}
-    Path("diagnostico").mkdir(exist_ok=True)
-    Path("diagnostico/teste_segmentado.json").write_text(json.dumps(relatorio, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(relatorio, ensure_ascii=False, indent=2))
-    return 0
+def consultas_catalogo(mapa, lojas, departamentos):
+    """Mapeia folhas observadas. Slugs sao candidatos, nao IDs comprovados."""
+    plano = planejar_catalogo(mapa, departamentos)
+    folhas = plano["folhas_candidatas"]
+    if not folhas:
+        raise ValueError("Nenhuma subcategoria mapeada.")
+    if departamentos == ["acougue"]:
+        esperadas = {"acougue/" + p for p in ACOUGUE_CANDIDATOS}
+        if set(folhas) != esperadas:
+            raise ValueError("Catalogo do acougue diverge das 11 folhas observadas.")
+    consultas = {}
+    usados = set()
+    for caminho in folhas:
+        item = mapa[caminho]
+        confirmado = item.get("codigo_validado_em_api") is True
+        cgid = item.get("codigo_confirmado") if confirmado else item.get("slug")
+        if not isinstance(cgid, str) or not cgid.strip():
+            raise ValueError(f"Identificador ausente: {caminho}")
+        if cgid in usados:
+            raise ValueError(f"Identificador ambiguo no catalogo: {cgid}")
+        usados.add(cgid)
+        consultas[caminho] = cgid
+        print(f"[CATALOGO] {caminho} => {cgid} ({'validado' if confirmado else 'slug candidato'})", flush=True)
+    print(f"[INFO] {len(consultas)} subcategorias selecionadas. Cobertura integral nao comprovada.")
+    return {loja["codigo"]: dict(consultas) for loja in lojas}
 
 
 def main() -> int:
@@ -1088,10 +1069,7 @@ def main() -> int:
     parser.add_argument("--planejar", action="store_true", help="Planejamento offline")
     parser.add_argument("--catalogo", default="catalogo_nagumo.json")
     parser.add_argument("--consultas-autorizadas", help="JSON de consultas validadas por filial")
-    parser.add_argument("--testar-segmentado", action="store_true")
     args = parser.parse_args()
-    if args.testar_segmentado:
-        return testar_segmentado(args.catalogo)
     if args.planejar:
         plano = planejar_catalogo(carregar_catalogo(args.catalogo), args.categorias)
         Path("diagnostico").mkdir(exist_ok=True)
@@ -1169,11 +1147,16 @@ def main() -> int:
     # Executar
     # --------------------------------------------------------
 
-    if not args.consultas_autorizadas:
-        parser.error("Coleta antiga suspensa; use --testar-segmentado ou forneca consultas autorizadas e validadas.")
-    consultas = None
+    mapa = carregar_catalogo(args.catalogo)
+    departamentos = DEPARTAMENTOS_ESPERADOS if args.todos else args.categorias
     if args.consultas_autorizadas:
-        consultas = carregar_consultas_autorizadas(args.consultas_autorizadas, carregar_catalogo(args.catalogo), lojas, args.categorias)
+        consultas = carregar_consultas_autorizadas(
+            args.consultas_autorizadas, mapa, lojas, departamentos
+        )
+    else:
+        consultas = consultas_catalogo(mapa, lojas, departamentos)
+    print("[INFO] COLETA REAL: consulta HTTP e persistencia no PostgreSQL.", flush=True)
+    print("[AVISO] Selecionar apenas filiais e categorias permitidas; slugs nao equivalem a IDs comprovados.", flush=True)
     return rodar(
         consultas_por_filial=consultas,
         lojas=lojas,
