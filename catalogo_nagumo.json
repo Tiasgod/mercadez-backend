@@ -1,0 +1,3793 @@
+{
+  "departamentos": [
+    {
+      "nome": "Açougue",
+      "slug": "acougue",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Ave",
+          "slug": "ave",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Ave Congelada",
+              "slug": "ave-congelada",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/ave-congelada/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Ave Refrigerada",
+              "slug": "ave-refrigerada",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/ave-refrigerada/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Iqf",
+              "slug": "iqf",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/iqf/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Bovino",
+          "slug": "bovino",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Bovino Congelado",
+              "slug": "bovino-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bovino Manipulado",
+              "slug": "bovino-manipulado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-manipulado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bovino Vácuo",
+              "slug": "bovino-vacuo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-vacuo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Caprino",
+          "slug": "caprino",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/caprino/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Caprino E Cordeiro",
+              "slug": "caprino-e-cordeiro",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/caprino/caprino-e-cordeiro/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Defumado E Charqueado",
+          "slug": "defumado-e-charqueado",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Carne Seca",
+              "slug": "carne-seca",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/carne-seca/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Suíno Defumado",
+              "slug": "suino-defumado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/suino-defumado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Suíno",
+          "slug": "suino",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Suino Congelado",
+              "slug": "suino-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/suino-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Suíno Refrigerado",
+              "slug": "suino-refrigerado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/suino-refrigerado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Básicos e Matinais",
+      "slug": "basicos-e-matinais",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Matinais",
+          "slug": "matinais",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Alimento Infantil",
+              "slug": "alimento-infantil",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/alimento-infantil/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Aveia",
+              "slug": "aveia",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/aveia/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bebida Pronta Láctea",
+              "slug": "bebida-pronta-lactea",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/bebida-pronta-lactea/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Cereal Matinal",
+              "slug": "cereal-matinal",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/cereal-matinal/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Saborizadores De Leite",
+              "slug": "saborizadores-de-leite",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/saborizadores-de-leite/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Suplemento Alimentar",
+              "slug": "suplemento-alimentar",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/suplemento-alimentar/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Bazar",
+      "slug": "bazar",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Artigo Festa",
+          "slug": "artigo-festa",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Acessório Festa",
+              "slug": "acessorio-festa",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/acessorio-festa/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Brinquedo Festa",
+              "slug": "brinquedo-festa",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/brinquedo-festa/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Descartável Festa",
+              "slug": "descartavel-festa",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/descartavel-festa/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Automotivo",
+          "slug": "automotivo",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Limpeza Auto",
+              "slug": "limpeza-auto",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/limpeza-auto/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Manutenção Auto",
+              "slug": "manutencao-auto",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/manutencao-auto/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Banheiro",
+          "slug": "banheiro",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Artigo Banheiro",
+              "slug": "artigo-banheiro",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/artigo-banheiro/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Manicure",
+              "slug": "manicure",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/manicure/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Toucador Banho",
+              "slug": "toucador-banho",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/toucador-banho/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Toucador Cabelo",
+              "slug": "toucador-cabelo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/toucador-cabelo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Casa",
+          "slug": "casa",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Artigo Lavanderia",
+              "slug": "artigo-lavanderia",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/artigo-lavanderia/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Manutencao-Reparo",
+              "slug": "manutencao-reparo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/manutencao-reparo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Saco Para Lixo",
+              "slug": "saco-para-lixo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/saco-para-lixo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Cuidado Calçado",
+          "slug": "cuidado-calcado",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Escova Calcado",
+              "slug": "escova-calcado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/escova-calcado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Pomada Calcado",
+              "slug": "pomada-calcado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/pomada-calcado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Eletroportateis",
+          "slug": "eletroportateis",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Air Fryer",
+              "slug": "air-fryer",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/air-fryer/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Ventilador",
+              "slug": "ventilador",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/ventilador/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Lazer",
+          "slug": "lazer",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Churrasco",
+              "slug": "churrasco",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/churrasco/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Praia-Camnping",
+              "slug": "praia-camnping",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/praia-camnping/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Papelaria",
+          "slug": "papelaria",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/papelaria/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Escolar",
+              "slug": "escolar",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/papelaria/escolar/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Tecnologia",
+          "slug": "tecnologia",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/tecnologia/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Telefonia",
+              "slug": "telefonia",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/tecnologia/telefonia/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Bebidas",
+      "slug": "bebidas",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Nao Alcoólicas",
+          "slug": "nao-alcoolicas",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Agua De Coco",
+              "slug": "agua-de-coco",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/agua-de-coco/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Agua Mineral",
+              "slug": "agua-mineral",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/agua-mineral/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bebida Energetica",
+              "slug": "bebida-energetica",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-energetica/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bebida Fruta",
+              "slug": "bebida-fruta",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-fruta/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bebida Hidratante",
+              "slug": "bebida-hidratante",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-hidratante/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bebida Vegetal",
+              "slug": "bebida-vegetal",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-vegetal/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Cha Liquido",
+              "slug": "cha-liquido",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/cha-liquido/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Refresco Em Pó",
+              "slug": "refresco-em-po",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refresco-em-po/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Refresco Liquido",
+              "slug": "refresco-liquido",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refresco-liquido/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Refrigerante",
+              "slug": "refrigerante",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refrigerante/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Suco Refrigerado",
+              "slug": "suco-refrigerado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/suco-refrigerado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Xarope",
+              "slug": "xarope",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/xarope/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Frios e Laticínios",
+      "slug": "frios-e-laticinios",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Armazém Frios",
+          "slug": "armazem-frios",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Conserva Fracionada",
+              "slug": "conserva-fracionada",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/conserva-fracionada/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Doce Conserva",
+              "slug": "doce-conserva",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/doce-conserva/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fruta Seca",
+              "slug": "fruta-seca",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/fruta-seca/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Congelados",
+          "slug": "congelados",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Ave Natalina",
+              "slug": "ave-natalina",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/ave-natalina/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bombom Congelado",
+              "slug": "bombom-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/bombom-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Bovino Frango Vegano",
+              "slug": "bovino-frango-vegano",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/bovino-frango-vegano/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fruta Congelada",
+              "slug": "fruta-congelada",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/fruta-congelada/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Gelo",
+              "slug": "gelo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/gelo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Sorvetes",
+              "slug": "sorvetes",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/sorvetes/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Vegetal Congelado",
+              "slug": "vegetal-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/vegetal-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Passadores",
+          "slug": "passadores",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Creme De Queijo",
+              "slug": "creme-de-queijo",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/creme-de-queijo/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Creme Vegetal",
+              "slug": "creme-vegetal",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/creme-vegetal/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Gordura Vegetal",
+              "slug": "gordura-vegetal",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/gordura-vegetal/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Manteiga",
+              "slug": "manteiga",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/manteiga/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Margarina",
+              "slug": "margarina",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/margarina/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Pasta E Antepasto",
+              "slug": "pasta-e-antepasto",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/pasta-e-antepasto/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Pate Refrigerado",
+              "slug": "pate-refrigerado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/pate-refrigerado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Reuqueijão",
+              "slug": "requeijao",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/requeijao/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Prato Pronto Congelado",
+          "slug": "prato-pronto-congelado",
+          "url": null,
+          "codigo_confirmado": null,
+          "observado_no_menu": false,
+          "subcategorias": [
+            {
+              "nome": "Empanados",
+              "slug": "empanados",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/prato-pronto-congelado/empanados/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Produção refrigerada",
+          "slug": "producao-refrigerada",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/producao-refrigerada/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Pizza Propria",
+              "slug": "pizza-propria",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/producao-refrigerada/pizza-propria/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Refrigerados",
+          "slug": "refrigerados",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Embutidos E Defumados",
+              "slug": "embutidos-e-defumados",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/embutidos-e-defumados/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fondue",
+              "slug": "fondue",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/fondue/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Massa Refrigerada",
+              "slug": "massa-refrigerada",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/massa-refrigerada/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Pão De Alho",
+              "slug": "pao-de-alho",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/pao-de-alho/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Hortifruti",
+      "slug": "hortifruti",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Armazem",
+          "slug": "armazem",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/armazem/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Granel",
+              "slug": "granel",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/armazem/granel/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Fruta Processada",
+          "slug": "fruta-processada",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-processada/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Suco Fruta",
+              "slug": "suco-fruta",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-processada/suco-fruta/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Fruta Sobremesa",
+          "slug": "fruta-sobremesa",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-sobremesa/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Salada De Fruta",
+              "slug": "salada-de-fruta",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-sobremesa/salada-de-fruta/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Frutas",
+          "slug": "frutas",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Fruta Citrica",
+              "slug": "fruta-citrica",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-citrica/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fruta Especial",
+              "slug": "fruta-especial",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-especial/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fruta Hidratantes",
+              "slug": "fruta-hidratantes",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-hidratantes/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Fruta Tradicional",
+              "slug": "fruta-tradicional",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-tradicional/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Limpeza",
+      "slug": "limpeza",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Especialista Cozinha",
+          "slug": "especialista-cozinha",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Lava Louça",
+              "slug": "lava-louca",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/lava-louca/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Limpador De Cozinha",
+              "slug": "limpador-de-cozinha",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/limpador-de-cozinha/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Limpador Metais",
+              "slug": "limpador-metais",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/limpador-metais/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Higienizador Horticola",
+          "slug": "higienizador-horticola",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/higienizador-horticola/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Desinfetante Horticola",
+              "slug": "desinfetante-horticola",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/higienizador-horticola/desinfetante-horticola/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Padaria",
+      "slug": "padaria",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/padaria/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Padaria Propria",
+          "slug": "padaria-propria",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/padaria/padaria-propria/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": []
+        }
+      ]
+    },
+    {
+      "nome": "Peixaria",
+      "slug": "peixaria",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Frutos Mar",
+          "slug": "frutos-mar",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Frutos Mar Congelado",
+              "slug": "frutos-mar-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/frutos-mar-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Frutos Mar Fresco",
+              "slug": "frutos-mar-fresco",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/frutos-mar-fresco/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Oriental",
+          "slug": "oriental",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/oriental/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Sushi",
+              "slug": "sushi",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/oriental/sushi/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Peixes",
+          "slug": "peixes",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Bacalhau",
+              "slug": "bacalhau",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/bacalhau/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Peixe Congelado",
+              "slug": "peixe-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Peixe Fresco",
+              "slug": "peixe-fresco",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-fresco/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Peixe Salgado",
+              "slug": "peixe-salgado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-salgado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Petisco Congelado",
+              "slug": "petisco-congelado",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/petisco-congelado/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Pet Shop",
+      "slug": "pet-shop",
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/",
+      "codigo_confirmado": null,
+      "observado_no_menu": true,
+      "subcategorias": [
+        {
+          "nome": "Alimento Cao",
+          "slug": "alimento-cao",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Petisco Cao",
+              "slug": "petisco-cao",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/petisco-cao/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Racao Cao",
+              "slug": "racao-cao",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/racao-cao/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Alimento Gato",
+          "slug": "alimento-gato",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Petisco Gato",
+              "slug": "petisco-gato",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/petisco-gato/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Racao Gato",
+              "slug": "racao-gato",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/racao-gato/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Cuidado Cao",
+          "slug": "cuidado-cao",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Acessorio Cao",
+              "slug": "acessorio-cao",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/acessorio-cao/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Higiene Cao",
+              "slug": "higiene-cao",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/higiene-cao/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Limpeza Pet",
+              "slug": "limpeza-pet",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/limpeza-pet/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Cuidado Gato",
+          "slug": "cuidado-gato",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Acessorio Gato",
+              "slug": "acessorio-gato",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/acessorio-gato/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Comedouro Gato",
+              "slug": "comedouro-gato",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/comedouro-gato/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            },
+            {
+              "nome": "Higiene Gato",
+              "slug": "higiene-gato",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/higiene-gato/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        },
+        {
+          "nome": "Pet Passaro",
+          "slug": "pet-passaro",
+          "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/pet-passaro/",
+          "codigo_confirmado": null,
+          "observado_no_menu": true,
+          "subcategorias": [
+            {
+              "nome": "Alimento Passaro",
+              "slug": "alimento-passaro",
+              "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/pet-passaro/alimento-passaro/",
+              "codigo_confirmado": null,
+              "observado_no_menu": true,
+              "subcategorias": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "categorias": [
+    {
+      "nome": "Açougue",
+      "departamento": "acougue",
+      "slug": "acougue",
+      "nivel": 1,
+      "hierarquia": [
+        "acougue"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Ave",
+      "departamento": "acougue",
+      "slug": "ave",
+      "nivel": 2,
+      "hierarquia": [
+        "acougue",
+        "ave"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Ave Congelada",
+      "departamento": "acougue",
+      "slug": "ave-congelada",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "ave",
+        "ave-congelada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/ave-congelada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Ave Refrigerada",
+      "departamento": "acougue",
+      "slug": "ave-refrigerada",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "ave",
+        "ave-refrigerada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/ave-refrigerada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Iqf",
+      "departamento": "acougue",
+      "slug": "iqf",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "ave",
+        "iqf"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/ave/iqf/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bovino",
+      "departamento": "acougue",
+      "slug": "bovino",
+      "nivel": 2,
+      "hierarquia": [
+        "acougue",
+        "bovino"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bovino Congelado",
+      "departamento": "acougue",
+      "slug": "bovino-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "bovino",
+        "bovino-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bovino Manipulado",
+      "departamento": "acougue",
+      "slug": "bovino-manipulado",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "bovino",
+        "bovino-manipulado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-manipulado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bovino Vácuo",
+      "departamento": "acougue",
+      "slug": "bovino-vacuo",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "bovino",
+        "bovino-vacuo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/bovino/bovino-vacuo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Caprino",
+      "departamento": "acougue",
+      "slug": "caprino",
+      "nivel": 2,
+      "hierarquia": [
+        "acougue",
+        "caprino"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/caprino/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Caprino E Cordeiro",
+      "departamento": "acougue",
+      "slug": "caprino-e-cordeiro",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "caprino",
+        "caprino-e-cordeiro"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/caprino/caprino-e-cordeiro/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Defumado E Charqueado",
+      "departamento": "acougue",
+      "slug": "defumado-e-charqueado",
+      "nivel": 2,
+      "hierarquia": [
+        "acougue",
+        "defumado-e-charqueado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Carne Seca",
+      "departamento": "acougue",
+      "slug": "carne-seca",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "defumado-e-charqueado",
+        "carne-seca"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/carne-seca/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suíno Defumado",
+      "departamento": "acougue",
+      "slug": "suino-defumado",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "defumado-e-charqueado",
+        "suino-defumado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/defumado-e-charqueado/suino-defumado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suíno",
+      "departamento": "acougue",
+      "slug": "suino",
+      "nivel": 2,
+      "hierarquia": [
+        "acougue",
+        "suino"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suino Congelado",
+      "departamento": "acougue",
+      "slug": "suino-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "suino",
+        "suino-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/suino-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suíno Refrigerado",
+      "departamento": "acougue",
+      "slug": "suino-refrigerado",
+      "nivel": 3,
+      "hierarquia": [
+        "acougue",
+        "suino",
+        "suino-refrigerado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/acougue/suino/suino-refrigerado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Básicos e Matinais",
+      "departamento": "basicos-e-matinais",
+      "slug": "basicos-e-matinais",
+      "nivel": 1,
+      "hierarquia": [
+        "basicos-e-matinais"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Matinais",
+      "departamento": "basicos-e-matinais",
+      "slug": "matinais",
+      "nivel": 2,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Alimento Infantil",
+      "departamento": "basicos-e-matinais",
+      "slug": "alimento-infantil",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "alimento-infantil"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/alimento-infantil/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Aveia",
+      "departamento": "basicos-e-matinais",
+      "slug": "aveia",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "aveia"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/aveia/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebida Pronta Láctea",
+      "departamento": "basicos-e-matinais",
+      "slug": "bebida-pronta-lactea",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "bebida-pronta-lactea"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/bebida-pronta-lactea/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Cereal Matinal",
+      "departamento": "basicos-e-matinais",
+      "slug": "cereal-matinal",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "cereal-matinal"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/cereal-matinal/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Saborizadores De Leite",
+      "departamento": "basicos-e-matinais",
+      "slug": "saborizadores-de-leite",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "saborizadores-de-leite"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/saborizadores-de-leite/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suplemento Alimentar",
+      "departamento": "basicos-e-matinais",
+      "slug": "suplemento-alimentar",
+      "nivel": 3,
+      "hierarquia": [
+        "basicos-e-matinais",
+        "matinais",
+        "suplemento-alimentar"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/basicos-e-matinais/matinais/suplemento-alimentar/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bazar",
+      "departamento": "bazar",
+      "slug": "bazar",
+      "nivel": 1,
+      "hierarquia": [
+        "bazar"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Artigo Festa",
+      "departamento": "bazar",
+      "slug": "artigo-festa",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "artigo-festa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Acessório Festa",
+      "departamento": "bazar",
+      "slug": "acessorio-festa",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "artigo-festa",
+        "acessorio-festa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/acessorio-festa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Brinquedo Festa",
+      "departamento": "bazar",
+      "slug": "brinquedo-festa",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "artigo-festa",
+        "brinquedo-festa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/brinquedo-festa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Descartável Festa",
+      "departamento": "bazar",
+      "slug": "descartavel-festa",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "artigo-festa",
+        "descartavel-festa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/artigo-festa/descartavel-festa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Automotivo",
+      "departamento": "bazar",
+      "slug": "automotivo",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "automotivo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Limpeza Auto",
+      "departamento": "bazar",
+      "slug": "limpeza-auto",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "automotivo",
+        "limpeza-auto"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/limpeza-auto/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Manutenção Auto",
+      "departamento": "bazar",
+      "slug": "manutencao-auto",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "automotivo",
+        "manutencao-auto"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/automotivo/manutencao-auto/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Banheiro",
+      "departamento": "bazar",
+      "slug": "banheiro",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "banheiro"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Artigo Banheiro",
+      "departamento": "bazar",
+      "slug": "artigo-banheiro",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "banheiro",
+        "artigo-banheiro"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/artigo-banheiro/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Manicure",
+      "departamento": "bazar",
+      "slug": "manicure",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "banheiro",
+        "manicure"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/manicure/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Toucador Banho",
+      "departamento": "bazar",
+      "slug": "toucador-banho",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "banheiro",
+        "toucador-banho"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/toucador-banho/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Toucador Cabelo",
+      "departamento": "bazar",
+      "slug": "toucador-cabelo",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "banheiro",
+        "toucador-cabelo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/banheiro/toucador-cabelo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Casa",
+      "departamento": "bazar",
+      "slug": "casa",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "casa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Artigo Lavanderia",
+      "departamento": "bazar",
+      "slug": "artigo-lavanderia",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "casa",
+        "artigo-lavanderia"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/artigo-lavanderia/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Manutencao-Reparo",
+      "departamento": "bazar",
+      "slug": "manutencao-reparo",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "casa",
+        "manutencao-reparo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/manutencao-reparo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Saco Para Lixo",
+      "departamento": "bazar",
+      "slug": "saco-para-lixo",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "casa",
+        "saco-para-lixo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/casa/saco-para-lixo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Cuidado Calçado",
+      "departamento": "bazar",
+      "slug": "cuidado-calcado",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "cuidado-calcado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Escova Calcado",
+      "departamento": "bazar",
+      "slug": "escova-calcado",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "cuidado-calcado",
+        "escova-calcado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/escova-calcado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pomada Calcado",
+      "departamento": "bazar",
+      "slug": "pomada-calcado",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "cuidado-calcado",
+        "pomada-calcado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/cuidado-calcado/pomada-calcado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Eletroportateis",
+      "departamento": "bazar",
+      "slug": "eletroportateis",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "eletroportateis"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Air Fryer",
+      "departamento": "bazar",
+      "slug": "air-fryer",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "eletroportateis",
+        "air-fryer"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/air-fryer/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Ventilador",
+      "departamento": "bazar",
+      "slug": "ventilador",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "eletroportateis",
+        "ventilador"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/eletroportateis/ventilador/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Lazer",
+      "departamento": "bazar",
+      "slug": "lazer",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "lazer"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Churrasco",
+      "departamento": "bazar",
+      "slug": "churrasco",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "lazer",
+        "churrasco"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/churrasco/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Praia-Camnping",
+      "departamento": "bazar",
+      "slug": "praia-camnping",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "lazer",
+        "praia-camnping"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/lazer/praia-camnping/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Papelaria",
+      "departamento": "bazar",
+      "slug": "papelaria",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "papelaria"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/papelaria/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Escolar",
+      "departamento": "bazar",
+      "slug": "escolar",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "papelaria",
+        "escolar"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/papelaria/escolar/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Tecnologia",
+      "departamento": "bazar",
+      "slug": "tecnologia",
+      "nivel": 2,
+      "hierarquia": [
+        "bazar",
+        "tecnologia"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/tecnologia/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Telefonia",
+      "departamento": "bazar",
+      "slug": "telefonia",
+      "nivel": 3,
+      "hierarquia": [
+        "bazar",
+        "tecnologia",
+        "telefonia"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bazar/tecnologia/telefonia/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebidas",
+      "departamento": "bebidas",
+      "slug": "bebidas",
+      "nivel": 1,
+      "hierarquia": [
+        "bebidas"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Nao Alcoólicas",
+      "departamento": "bebidas",
+      "slug": "nao-alcoolicas",
+      "nivel": 2,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Agua De Coco",
+      "departamento": "bebidas",
+      "slug": "agua-de-coco",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "agua-de-coco"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/agua-de-coco/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Agua Mineral",
+      "departamento": "bebidas",
+      "slug": "agua-mineral",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "agua-mineral"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/agua-mineral/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebida Energetica",
+      "departamento": "bebidas",
+      "slug": "bebida-energetica",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "bebida-energetica"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-energetica/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebida Fruta",
+      "departamento": "bebidas",
+      "slug": "bebida-fruta",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "bebida-fruta"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-fruta/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebida Hidratante",
+      "departamento": "bebidas",
+      "slug": "bebida-hidratante",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "bebida-hidratante"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-hidratante/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bebida Vegetal",
+      "departamento": "bebidas",
+      "slug": "bebida-vegetal",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "bebida-vegetal"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/bebida-vegetal/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Cha Liquido",
+      "departamento": "bebidas",
+      "slug": "cha-liquido",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "cha-liquido"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/cha-liquido/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Refresco Em Pó",
+      "departamento": "bebidas",
+      "slug": "refresco-em-po",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "refresco-em-po"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refresco-em-po/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Refresco Liquido",
+      "departamento": "bebidas",
+      "slug": "refresco-liquido",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "refresco-liquido"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refresco-liquido/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Refrigerante",
+      "departamento": "bebidas",
+      "slug": "refrigerante",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "refrigerante"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/refrigerante/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suco Refrigerado",
+      "departamento": "bebidas",
+      "slug": "suco-refrigerado",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "suco-refrigerado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/suco-refrigerado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Xarope",
+      "departamento": "bebidas",
+      "slug": "xarope",
+      "nivel": 3,
+      "hierarquia": [
+        "bebidas",
+        "nao-alcoolicas",
+        "xarope"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/bebidas/nao-alcoolicas/xarope/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Frios e Laticínios",
+      "departamento": "frios-e-laticinios",
+      "slug": "frios-e-laticinios",
+      "nivel": 1,
+      "hierarquia": [
+        "frios-e-laticinios"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Armazém Frios",
+      "departamento": "frios-e-laticinios",
+      "slug": "armazem-frios",
+      "nivel": 2,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "armazem-frios"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Conserva Fracionada",
+      "departamento": "frios-e-laticinios",
+      "slug": "conserva-fracionada",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "armazem-frios",
+        "conserva-fracionada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/conserva-fracionada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Doce Conserva",
+      "departamento": "frios-e-laticinios",
+      "slug": "doce-conserva",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "armazem-frios",
+        "doce-conserva"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/doce-conserva/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Seca",
+      "departamento": "frios-e-laticinios",
+      "slug": "fruta-seca",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "armazem-frios",
+        "fruta-seca"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/armazem-frios/fruta-seca/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Congelados",
+      "departamento": "frios-e-laticinios",
+      "slug": "congelados",
+      "nivel": 2,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Ave Natalina",
+      "departamento": "frios-e-laticinios",
+      "slug": "ave-natalina",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "ave-natalina"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/ave-natalina/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bombom Congelado",
+      "departamento": "frios-e-laticinios",
+      "slug": "bombom-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "bombom-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/bombom-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bovino Frango Vegano",
+      "departamento": "frios-e-laticinios",
+      "slug": "bovino-frango-vegano",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "bovino-frango-vegano"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/bovino-frango-vegano/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Congelada",
+      "departamento": "frios-e-laticinios",
+      "slug": "fruta-congelada",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "fruta-congelada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/fruta-congelada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Gelo",
+      "departamento": "frios-e-laticinios",
+      "slug": "gelo",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "gelo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/gelo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Sorvetes",
+      "departamento": "frios-e-laticinios",
+      "slug": "sorvetes",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "sorvetes"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/sorvetes/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Vegetal Congelado",
+      "departamento": "frios-e-laticinios",
+      "slug": "vegetal-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "congelados",
+        "vegetal-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/congelados/vegetal-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Passadores",
+      "departamento": "frios-e-laticinios",
+      "slug": "passadores",
+      "nivel": 2,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Creme De Queijo",
+      "departamento": "frios-e-laticinios",
+      "slug": "creme-de-queijo",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "creme-de-queijo"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/creme-de-queijo/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Creme Vegetal",
+      "departamento": "frios-e-laticinios",
+      "slug": "creme-vegetal",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "creme-vegetal"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/creme-vegetal/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Gordura Vegetal",
+      "departamento": "frios-e-laticinios",
+      "slug": "gordura-vegetal",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "gordura-vegetal"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/gordura-vegetal/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Manteiga",
+      "departamento": "frios-e-laticinios",
+      "slug": "manteiga",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "manteiga"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/manteiga/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Margarina",
+      "departamento": "frios-e-laticinios",
+      "slug": "margarina",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "margarina"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/margarina/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pasta E Antepasto",
+      "departamento": "frios-e-laticinios",
+      "slug": "pasta-e-antepasto",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "pasta-e-antepasto"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/pasta-e-antepasto/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pate Refrigerado",
+      "departamento": "frios-e-laticinios",
+      "slug": "pate-refrigerado",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "pate-refrigerado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/pate-refrigerado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Reuqueijão",
+      "departamento": "frios-e-laticinios",
+      "slug": "requeijao",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "passadores",
+        "requeijao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/passadores/requeijao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Empanados",
+      "departamento": "frios-e-laticinios",
+      "slug": "empanados",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "prato-pronto-congelado",
+        "empanados"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/prato-pronto-congelado/empanados/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Produção refrigerada",
+      "departamento": "frios-e-laticinios",
+      "slug": "producao-refrigerada",
+      "nivel": 2,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "producao-refrigerada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/producao-refrigerada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pizza Propria",
+      "departamento": "frios-e-laticinios",
+      "slug": "pizza-propria",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "producao-refrigerada",
+        "pizza-propria"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/producao-refrigerada/pizza-propria/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Refrigerados",
+      "departamento": "frios-e-laticinios",
+      "slug": "refrigerados",
+      "nivel": 2,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "refrigerados"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Embutidos E Defumados",
+      "departamento": "frios-e-laticinios",
+      "slug": "embutidos-e-defumados",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "refrigerados",
+        "embutidos-e-defumados"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/embutidos-e-defumados/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fondue",
+      "departamento": "frios-e-laticinios",
+      "slug": "fondue",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "refrigerados",
+        "fondue"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/fondue/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Massa Refrigerada",
+      "departamento": "frios-e-laticinios",
+      "slug": "massa-refrigerada",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "refrigerados",
+        "massa-refrigerada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/massa-refrigerada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pão De Alho",
+      "departamento": "frios-e-laticinios",
+      "slug": "pao-de-alho",
+      "nivel": 3,
+      "hierarquia": [
+        "frios-e-laticinios",
+        "refrigerados",
+        "pao-de-alho"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/frios-e-laticinios/refrigerados/pao-de-alho/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Hortifruti",
+      "departamento": "hortifruti",
+      "slug": "hortifruti",
+      "nivel": 1,
+      "hierarquia": [
+        "hortifruti"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Armazem",
+      "departamento": "hortifruti",
+      "slug": "armazem",
+      "nivel": 2,
+      "hierarquia": [
+        "hortifruti",
+        "armazem"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/armazem/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Granel",
+      "departamento": "hortifruti",
+      "slug": "granel",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "armazem",
+        "granel"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/armazem/granel/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Processada",
+      "departamento": "hortifruti",
+      "slug": "fruta-processada",
+      "nivel": 2,
+      "hierarquia": [
+        "hortifruti",
+        "fruta-processada"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-processada/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Suco Fruta",
+      "departamento": "hortifruti",
+      "slug": "suco-fruta",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "fruta-processada",
+        "suco-fruta"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-processada/suco-fruta/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Sobremesa",
+      "departamento": "hortifruti",
+      "slug": "fruta-sobremesa",
+      "nivel": 2,
+      "hierarquia": [
+        "hortifruti",
+        "fruta-sobremesa"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-sobremesa/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Salada De Fruta",
+      "departamento": "hortifruti",
+      "slug": "salada-de-fruta",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "fruta-sobremesa",
+        "salada-de-fruta"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/fruta-sobremesa/salada-de-fruta/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Frutas",
+      "departamento": "hortifruti",
+      "slug": "frutas",
+      "nivel": 2,
+      "hierarquia": [
+        "hortifruti",
+        "frutas"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Citrica",
+      "departamento": "hortifruti",
+      "slug": "fruta-citrica",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "frutas",
+        "fruta-citrica"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-citrica/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Especial",
+      "departamento": "hortifruti",
+      "slug": "fruta-especial",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "frutas",
+        "fruta-especial"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-especial/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Hidratantes",
+      "departamento": "hortifruti",
+      "slug": "fruta-hidratantes",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "frutas",
+        "fruta-hidratantes"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-hidratantes/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Fruta Tradicional",
+      "departamento": "hortifruti",
+      "slug": "fruta-tradicional",
+      "nivel": 3,
+      "hierarquia": [
+        "hortifruti",
+        "frutas",
+        "fruta-tradicional"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/hortifruti/frutas/fruta-tradicional/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Limpeza",
+      "departamento": "limpeza",
+      "slug": "limpeza",
+      "nivel": 1,
+      "hierarquia": [
+        "limpeza"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Especialista Cozinha",
+      "departamento": "limpeza",
+      "slug": "especialista-cozinha",
+      "nivel": 2,
+      "hierarquia": [
+        "limpeza",
+        "especialista-cozinha"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Lava Louça",
+      "departamento": "limpeza",
+      "slug": "lava-louca",
+      "nivel": 3,
+      "hierarquia": [
+        "limpeza",
+        "especialista-cozinha",
+        "lava-louca"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/lava-louca/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Limpador De Cozinha",
+      "departamento": "limpeza",
+      "slug": "limpador-de-cozinha",
+      "nivel": 3,
+      "hierarquia": [
+        "limpeza",
+        "especialista-cozinha",
+        "limpador-de-cozinha"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/limpador-de-cozinha/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Limpador Metais",
+      "departamento": "limpeza",
+      "slug": "limpador-metais",
+      "nivel": 3,
+      "hierarquia": [
+        "limpeza",
+        "especialista-cozinha",
+        "limpador-metais"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/especialista-cozinha/limpador-metais/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Higienizador Horticola",
+      "departamento": "limpeza",
+      "slug": "higienizador-horticola",
+      "nivel": 2,
+      "hierarquia": [
+        "limpeza",
+        "higienizador-horticola"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/higienizador-horticola/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Desinfetante Horticola",
+      "departamento": "limpeza",
+      "slug": "desinfetante-horticola",
+      "nivel": 3,
+      "hierarquia": [
+        "limpeza",
+        "higienizador-horticola",
+        "desinfetante-horticola"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/limpeza/higienizador-horticola/desinfetante-horticola/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Padaria",
+      "departamento": "padaria",
+      "slug": "padaria",
+      "nivel": 1,
+      "hierarquia": [
+        "padaria"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/padaria/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Padaria Propria",
+      "departamento": "padaria",
+      "slug": "padaria-propria",
+      "nivel": 2,
+      "hierarquia": [
+        "padaria",
+        "padaria-propria"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/padaria/padaria-propria/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Peixaria",
+      "departamento": "peixaria",
+      "slug": "peixaria",
+      "nivel": 1,
+      "hierarquia": [
+        "peixaria"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Frutos Mar",
+      "departamento": "peixaria",
+      "slug": "frutos-mar",
+      "nivel": 2,
+      "hierarquia": [
+        "peixaria",
+        "frutos-mar"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Frutos Mar Congelado",
+      "departamento": "peixaria",
+      "slug": "frutos-mar-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "frutos-mar",
+        "frutos-mar-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/frutos-mar-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Frutos Mar Fresco",
+      "departamento": "peixaria",
+      "slug": "frutos-mar-fresco",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "frutos-mar",
+        "frutos-mar-fresco"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/frutos-mar/frutos-mar-fresco/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Oriental",
+      "departamento": "peixaria",
+      "slug": "oriental",
+      "nivel": 2,
+      "hierarquia": [
+        "peixaria",
+        "oriental"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/oriental/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Sushi",
+      "departamento": "peixaria",
+      "slug": "sushi",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "oriental",
+        "sushi"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/oriental/sushi/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Peixes",
+      "departamento": "peixaria",
+      "slug": "peixes",
+      "nivel": 2,
+      "hierarquia": [
+        "peixaria",
+        "peixes"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Bacalhau",
+      "departamento": "peixaria",
+      "slug": "bacalhau",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "peixes",
+        "bacalhau"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/bacalhau/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Peixe Congelado",
+      "departamento": "peixaria",
+      "slug": "peixe-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "peixes",
+        "peixe-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Peixe Fresco",
+      "departamento": "peixaria",
+      "slug": "peixe-fresco",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "peixes",
+        "peixe-fresco"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-fresco/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Peixe Salgado",
+      "departamento": "peixaria",
+      "slug": "peixe-salgado",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "peixes",
+        "peixe-salgado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/peixe-salgado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Petisco Congelado",
+      "departamento": "peixaria",
+      "slug": "petisco-congelado",
+      "nivel": 3,
+      "hierarquia": [
+        "peixaria",
+        "peixes",
+        "petisco-congelado"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/peixaria/peixes/petisco-congelado/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pet Shop",
+      "departamento": "pet-shop",
+      "slug": "pet-shop",
+      "nivel": 1,
+      "hierarquia": [
+        "pet-shop"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Alimento Cao",
+      "departamento": "pet-shop",
+      "slug": "alimento-cao",
+      "nivel": 2,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Petisco Cao",
+      "departamento": "pet-shop",
+      "slug": "petisco-cao",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-cao",
+        "petisco-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/petisco-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Racao Cao",
+      "departamento": "pet-shop",
+      "slug": "racao-cao",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-cao",
+        "racao-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-cao/racao-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Alimento Gato",
+      "departamento": "pet-shop",
+      "slug": "alimento-gato",
+      "nivel": 2,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Petisco Gato",
+      "departamento": "pet-shop",
+      "slug": "petisco-gato",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-gato",
+        "petisco-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/petisco-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Racao Gato",
+      "departamento": "pet-shop",
+      "slug": "racao-gato",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "alimento-gato",
+        "racao-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/alimento-gato/racao-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Cuidado Cao",
+      "departamento": "pet-shop",
+      "slug": "cuidado-cao",
+      "nivel": 2,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Acessorio Cao",
+      "departamento": "pet-shop",
+      "slug": "acessorio-cao",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-cao",
+        "acessorio-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/acessorio-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Higiene Cao",
+      "departamento": "pet-shop",
+      "slug": "higiene-cao",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-cao",
+        "higiene-cao"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/higiene-cao/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Limpeza Pet",
+      "departamento": "pet-shop",
+      "slug": "limpeza-pet",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-cao",
+        "limpeza-pet"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-cao/limpeza-pet/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Cuidado Gato",
+      "departamento": "pet-shop",
+      "slug": "cuidado-gato",
+      "nivel": 2,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Acessorio Gato",
+      "departamento": "pet-shop",
+      "slug": "acessorio-gato",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-gato",
+        "acessorio-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/acessorio-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Comedouro Gato",
+      "departamento": "pet-shop",
+      "slug": "comedouro-gato",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-gato",
+        "comedouro-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/comedouro-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Higiene Gato",
+      "departamento": "pet-shop",
+      "slug": "higiene-gato",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "cuidado-gato",
+        "higiene-gato"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/cuidado-gato/higiene-gato/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Pet Passaro",
+      "departamento": "pet-shop",
+      "slug": "pet-passaro",
+      "nivel": 2,
+      "hierarquia": [
+        "pet-shop",
+        "pet-passaro"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/pet-passaro/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    },
+    {
+      "nome": "Alimento Passaro",
+      "departamento": "pet-shop",
+      "slug": "alimento-passaro",
+      "nivel": 3,
+      "hierarquia": [
+        "pet-shop",
+        "pet-passaro",
+        "alimento-passaro"
+      ],
+      "url": "https://www.nagumo.com.br/categoria/departamentos/pet-shop/pet-passaro/alimento-passaro/",
+      "evidencias_codigo": [],
+      "codigo_confirmado": null,
+      "codigo_validado_em_api": false
+    }
+  ],
+  "estatisticas": {
+    "links_analisados": 503,
+    "departamentos_encontrados": 10,
+    "categorias_encontradas": 149,
+    "subcategorias_encontradas": 139,
+    "codigos_confirmados": 0,
+    "codigos_validados_em_api": 0,
+    "categorias_por_nivel": {
+      "1": 10,
+      "2": 36,
+      "3": 103
+    },
+    "subcategorias_por_departamento": {
+      "acougue": 16,
+      "basicos-e-matinais": 7,
+      "bazar": 29,
+      "bebidas": 13,
+      "frios-e-laticinios": 29,
+      "hortifruti": 11,
+      "limpeza": 6,
+      "padaria": 1,
+      "peixaria": 11,
+      "pet-shop": 16
+    },
+    "departamentos_ausentes": [
+      "higiene-e-perfumaria",
+      "mercearia-doce",
+      "mercearia-salgada"
+    ],
+    "departamentos_novos": [],
+    "links_descartados_distintos": {
+      "externo": 24,
+      "fora_da_hierarquia": 51,
+      "pagina_de_produto": 87
+    },
+    "conflitos_codigo": 0
+  },
+  "conflitos_codigo": [],
+  "cobertura_completa_confirmada": false,
+  "catalogo_por_filial_verificado": false,
+  "data_mapeamento": "2026-11-27T18:50:07.391566+00:00",
+  "fonte": "https://www.nagumo.com.br",
+  "escopo": "Menu publico da sessao atual; nao verificado por filial",
+  "lojas_regiao": [
+    {
+      "storeName": "052-MOGI3",
+      "storeId": "52",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AVENIDA HENRIQUE EROLES, ALTO IPIRANGA, MOGI DAS CRUZES, SP",
+      "city": "MOGI DAS CRUZES",
+      "district": "ALTO IPIRANGA",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "eb4d56ec6cdac280fcb6e948b7"
+    },
+    {
+      "storeName": "023-D.BENTA",
+      "storeId": "23",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AVENIDA FRANCISCO MARENGO, JARDIM DONA BENTA, SUZANO, SP",
+      "city": "SUZANO",
+      "district": "JARDIM DONA BENTA",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "8457d4bbe58502ffc978432b0a"
+    },
+    {
+      "storeName": "030-ITAQUA",
+      "storeId": "30",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "ESTRADA DE SAO BENTO, JARDIM ODETE, ITAQUAQUECETUBA, SP",
+      "city": "ITAQUAQUECETUBA",
+      "district": "JARDIM ODETE",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "a7b76067a1901202940de2cdd4"
+    },
+    {
+      "storeName": "027-V.MAZZA",
+      "storeId": "27",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AVENIDA BRASILIA, VILA URUPES, SUZANO, SP",
+      "city": "SUZANO",
+      "district": "VILA URUPES",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "549fceaa3507d22c02c32775f7"
+    },
+    {
+      "storeName": "055-BONSUCES",
+      "storeId": "55",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "RUA TAMOTSU IWASSE, VILA NOVA BONSUCESSO, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "VILA NOVA BONSUCESSO",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "c283c9f7307855451084ce5fe4"
+    },
+    {
+      "storeName": "039-ITAQUA2",
+      "storeId": "39",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "ESTRADA DE SANTA ISABEL, VILA ZEFERINA, ITAQUAQUECETUBA, SP",
+      "city": "ITAQUAQUECETUBA",
+      "district": "VILA ZEFERINA",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "ba495f5a96db1fd1dae9778b4c"
+    },
+    {
+      "storeName": "022-CALMON",
+      "storeId": "22",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AVENIDA GETULIO VARGAS, CALMON VIANA, POA, SP",
+      "city": "POA",
+      "district": "CALMON VIANA",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "b3ff4db374cfccbe6952ac4fb6"
+    },
+    {
+      "storeName": "045-POA 2",
+      "storeId": "45",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "RUA MARIA DO ROSARIO, JARDIM IVONETE, POA, SP",
+      "city": "POA",
+      "district": "JARDIM IVONETE",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "b89359bd730cbb1d46230a0bc6"
+    },
+    {
+      "storeName": "049-SHOP.PIM",
+      "storeId": "49",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "ESTR. PRES. JUCELINO KUBTSCHEK DE OLIVEIRA, PARQUE SÃO MIGUEL, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "PARQUE SÃO MIGUEL",
+      "phone": null,
+      "businessHours": "De segunda à sábado das 7h às 22h. Domingo das 7h às 20h",
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "026b10fd7f5360e158148e1bed"
+    },
+    {
+      "storeName": "061-ALVORADA",
+      "storeId": "61",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AV. SANTANA DO MUNDAU, CIDADE PARQUE ALVORADA, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "CIDADE PARQUE ALVORADA",
+      "phone": "11 5178-4061",
+      "businessHours": "De segunda à sábado das 8h às 21h. Domingo das 8h às 19h.",
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "69a2b00b90f80dafaf08beda3b"
+    },
+    {
+      "storeName": "042-CUMBICA2",
+      "storeId": "42",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "CAMINHO DO CAMPO DO RINCAO, JARDIM CUMBICA, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "JARDIM CUMBICA",
+      "phone": null,
+      "businessHours": "De segunda à sábado das 7h às 22h. Domingo das 7h às 20h",
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "b0a682e626ab2a126dcf83097e"
+    },
+    {
+      "storeName": "041-MERC.BON",
+      "storeId": "41",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "ESTRADA ACACIO ANTONIO BATISTA, VILA NOVA BONSUCESSO, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "VILA NOVA BONSUCESSO",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "e7ff8c3724ebf3aafddef7ea39"
+    },
+    {
+      "storeName": "056-ELENCO",
+      "storeId": "56",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "ESTRADA DO ELENCO, JD DONA MERI, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "JD DONA MERI",
+      "phone": "11 2189-0256",
+      "businessHours": "De segunda à sábado das 8h às 21h. Domingo das 8h às 19h.",
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "103160906a4101bbc967ffc8ad"
+    },
+    {
+      "storeName": "057-ANELVIAR",
+      "storeId": "57",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AV PRES HUMBERTO DE A. CASTELO BRAN, VILA LEONOR, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "VILA LEONOR",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "bcb4dbae5e91f5ad2a5d6ab71d"
+    },
+    {
+      "storeName": "051-PQ CONTI",
+      "storeId": "51",
+      "imgUrl": null,
+      "active": false,
+      "operation": true,
+      "address": "AVENIDA JOAO PALMA ALEMAN, PARQUE CONTINENTAL I, GUARULHOS, SP",
+      "city": "GUARULHOS",
+      "district": "PARQUE CONTINENTAL I",
+      "phone": null,
+      "businessHours": null,
+      "waze": null,
+      "googleMaps": null,
+      "services": [],
+      "UUID": "cbc9450202b231594983ade033"
+    }
+  ],
+  "filiais": [
+    {
+      "storeId": "52",
+      "storeName": "052-MOGI3",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "23",
+      "storeName": "023-D.BENTA",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "30",
+      "storeName": "030-ITAQUA",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "27",
+      "storeName": "027-V.MAZZA",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "55",
+      "storeName": "055-BONSUCES",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "39",
+      "storeName": "039-ITAQUA2",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "22",
+      "storeName": "022-CALMON",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "45",
+      "storeName": "045-POA 2",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "49",
+      "storeName": "049-SHOP.PIM",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "61",
+      "storeName": "061-ALVORADA",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "42",
+      "storeName": "042-CUMBICA2",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "41",
+      "storeName": "041-MERC.BON",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "56",
+      "storeName": "056-ELENCO",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "57",
+      "storeName": "057-ANELVIAR",
+      "catalogo_verificado": false
+    },
+    {
+      "storeId": "51",
+      "storeName": "051-PQ CONTI",
+      "catalogo_verificado": false
+    }
+  ]
+}
