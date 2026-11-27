@@ -1,9 +1,13 @@
-name: Mercadez - Nagumo Simplificado
+name: Mercadez - Nagumo Diagnostico
 
 "on":
-  schedule:
-    - cron: "49 13 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      acesso_confirmado:
+        description: "Acesso e limites confirmados com o fornecedor"
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
@@ -15,19 +19,16 @@ concurrency:
 jobs:
   atualizar-catalogo:
     name: Coleta sequencial Nagumo
-    if: ${{ vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
+    if: ${{ inputs.acesso_confirmado && vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 350
-
     env:
       PYTHONUNBUFFERED: "1"
 
     steps:
-      - name: Baixar repositorio
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      - name: Configurar Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -36,45 +37,85 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
           python -m pip install playwright
+          python -m playwright install --with-deps chromium
 
-      - name: Verificar pausa registrada no Neon
-        id: pausa
+      - name: Executar scraper
+        id: coleta
+        shell: bash
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          python - <<'PY'
-          import os
-          from sqlalchemy import text
-          from app.core.database import SessionLocal
+          set -o pipefail
+          mkdir -p diagnostico
 
-          with SessionLocal() as db:
-              estado = db.execute(text(
-                  "SELECT status_http, etapa FROM nagumo_coleta_pausa WHERE id = 1"
-              )).first()
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write(f"ativa={'true' if estado else 'false'}\n")
-
-          if estado:
-              print(f"Coleta suspensa: HTTP {estado[0]} em {estado[1]}.")
-              print("Nenhuma nova consulta ao Nagumo sera realizada.")
-              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-                  summary.write("## Coleta suspensa\n\nExiste uma recusa anterior registrada no Neon.\n")
-          else:
-              print("Nenhuma pausa registrada.")
-          PY
-
-      - name: Instalar Chromium
-        if: steps.pausa.outputs.ativa == 'false'
-        run: python -m playwright install --with-deps chromium
-
-      - name: Executar scraper Nagumo
-        if: steps.pausa.outputs.ativa == 'false'
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
           echo "Commit: $GITHUB_SHA"
+
           python --version
           python -m playwright --version
-          TZ=America/Sao_Paulo date
-          python -m app.scripts.scraper_nagumo --todas-lojas --todos
+          date -u
+
+          python -m app.scripts.scraper_nagumo --todas-lojas --todos 2>&1 | tee diagnostico/coleta.log
+
+      - name: Resumo do diagnostico
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p diagnostico
+
+          python - <<'PY'
+          import json, os
+          from collections import Counter
+          from pathlib import Path
+
+          log = Path('diagnostico/coleta.log')
+          eventos = []
+          lotes = 0
+          loja = 'Nao iniciada'
+
+          if log.exists():
+              for linha in log.read_text(errors='replace').splitlines():
+                  if linha.startswith('[INFO] Loja em processamento:'):
+                      loja = linha
+
+                  if 'Lote gravado:' in linha:
+                      lotes += 1
+
+                  try:
+                      evento = json.loads(linha)
+                  except ValueError:
+                      continue
+
+                  if isinstance(evento, dict) and evento.get('evento') == 'http':
+                      eventos.append(evento)
+
+          contagem = Counter(e.get('status') for e in eventos)
+
+          linhas = [
+              loja,
+              f'Lotes gravados: {lotes}',
+              f'Eventos HTTP registrados: {len(eventos)}',
+              f'Status: {dict(contagem)}',
+              'Ultimos eventos HTTP:'
+          ]
+
+          for e in eventos[-5:]:
+              linhas.append(json.dumps(e, ensure_ascii=False))
+
+          texto = '\n'.join(linhas)
+
+          print(texto)
+
+          Path('diagnostico/relatorio.txt').write_text(texto)
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## Diagnostico Nagumo\n\n```text\n' + texto + '\n```\n')
+          PY
+
+      - name: Salvar relatorio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-nagumo
+          path: diagnostico/relatorio.txt
+          retention-days: 7
+          if-no-files-found: warn
