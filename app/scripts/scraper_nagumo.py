@@ -32,12 +32,6 @@ INTERVALO_ENTRE_REQUISICOES_SEGUNDOS = 3.0
 # Pausa entre categorias.
 INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS = 3.0
 
-# Número de tentativas para selecionar uma loja.
-MAX_TENTATIVAS_SELECAO_LOJA = 3
-
-# Tempo de espera entre tentativas de seleção.
-INTERVALO_RETRY_LOJA_SEGUNDOS = 3.0
-
 TAMANHO_PAGINA = 40
 MAX_PAGINAS_CATEGORIA = 1500
 # Teto conservador baseado na recusa observada; nao e autorizacao de acesso.
@@ -273,7 +267,7 @@ def _tentar_selecionar_loja(
 
 
 # ============================================================
-# SELECIONAR LOJA - COM RETRY
+# SELECIONAR LOJA - SEM REPETICAO AUTOMATICA
 # ============================================================
 
 def _selecionar_loja(
@@ -285,138 +279,15 @@ def _selecionar_loja(
     browser=None,
     context: BrowserContext | None = None,
 ) -> tuple[Page, BrowserContext | None, object]:
-    """
-    Tenta selecionar a loja várias vezes.
-
-    Se o Nagumo retornar HTTP 500, a sessão do navegador
-    pode ser recriada antes da próxima tentativa.
-
-    Retorna:
-        page
-        context
-        browser
-    """
-
-    ultimo_erro = "Erro desconhecido."
-
-    for tentativa in range(
-        1,
-        MAX_TENTATIVAS_SELECAO_LOJA + 1,
-    ):
-
-        print(
-            f"[INFO] Selecionando loja {loja_codigo} "
-            f"(tentativa {tentativa}/"
-            f"{MAX_TENTATIVAS_SELECAO_LOJA})..."
-        )
-
-        try:
-
-            sucesso, erro = _tentar_selecionar_loja(
-                page=page,
-                loja_codigo=loja_codigo,
-                lat=lat,
-                lng=lng,
-            )
-
-            if sucesso:
-
-                print(
-                    f"[OK] Loja {loja_codigo} "
-                    "selecionada no Nagumo."
-                )
-
-                return page, context, browser
-
-            ultimo_erro = erro
-
-            print(
-                f"[AVISO] Falha ao selecionar loja "
-                f"{loja_codigo}: {erro}"
-            )
-
-        except AcessoRecusado:
-            raise
-        except Exception as erro:
-
-            ultimo_erro = str(erro)
-
-            print(
-                f"[AVISO] Erro na seleção da loja "
-                f"{loja_codigo}: {erro}"
-            )
-
-        # ----------------------------------------------------
-        # Se ainda haverá tentativa, aguardar.
-        # ----------------------------------------------------
-
-        if tentativa < MAX_TENTATIVAS_SELECAO_LOJA:
-
-            print(
-                f"[INFO] Aguardando "
-                f"{INTERVALO_RETRY_LOJA_SEGUNDOS:.1f}s "
-                "antes de tentar novamente..."
-            )
-
-            time.sleep(
-                INTERVALO_RETRY_LOJA_SEGUNDOS
-            )
-
-            # ------------------------------------------------
-            # Recriar contexto para limpar cookies/sessão.
-            # ------------------------------------------------
-
-            if (
-                playwright is not None
-                and browser is not None
-            ):
-
-                print(
-                    "[INFO] Recriando sessão do Nagumo..."
-                )
-
-                try:
-
-                    if context is not None:
-                        context.close()
-
-                except Exception:
-                    pass
-
-                context = browser.new_context(
-                    locale="pt-BR",
-                    timezone_id="America/Sao_Paulo",
-
-                    extra_http_headers={
-                        "Accept-Language": (
-                            "pt-BR,pt;q=0.9,"
-                            "en-US;q=0.8,en;q=0.7"
-                        ),
-                    },
-                )
-
-                page = context.new_page()
-
-                try:
-
-                    _abrir_nagumo(page)
-
-                except AcessoRecusado:
-                    raise
-                except Exception as erro_abertura:
-
-                    print(
-                        "[AVISO] Não foi possível "
-                        "reabrir o Nagumo: "
-                        f"{erro_abertura}"
-                    )
-
-    raise RuntimeError(
-        f"Não foi possível selecionar a loja "
-        f"{loja_codigo} após "
-        f"{MAX_TENTATIVAS_SELECAO_LOJA} tentativas.\n"
-        f"Último erro: {ultimo_erro}"
+    """Seleciona a loja uma vez; falhas interrompem a coleta."""
+    print(f"[INFO] Selecionando loja {loja_codigo}...")
+    sucesso, erro = _tentar_selecionar_loja(
+        page=page, loja_codigo=loja_codigo, lat=lat, lng=lng,
     )
+    if not sucesso:
+        raise RuntimeError(f"Falha ao selecionar loja {loja_codigo}: {erro}")
+    print(f"[OK] Loja {loja_codigo} selecionada no Nagumo.")
+    return page, context, browser
 
 
 # ============================================================
@@ -501,10 +372,13 @@ def _verificar_limite_posicao(inicio):
 def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> list[dict]:
     _verificar_limite_posicao(inicio)
     tamanho = min(TAMANHO_PAGINA, LIMITE_RESULTADOS - inicio)
+    print(f"[INFO] Consulta: categoria={cgid}, start={inicio}, sz={tamanho}")
+    inicio_http = time.monotonic()
     parametros = urlencode({"cgid": cgid, "start": inicio, "sz": tamanho})
     url = (f"{BASE}/on/demandware.store/Sites-Nagumo-Site/pt_BR/Search-UpdateGrid?{parametros}")
     resposta = context.request.get(url, headers={"Accept": "*/*", "Referer": f"{BASE}/"}, timeout=60000)
     try:
+        print(f"[INFO] Resposta recebida em {time.monotonic() - inicio_http:.2f}s")
         verificar_acesso(resposta.status, f"categoria {cgid}, posicao {inicio}", resposta.headers)
         if resposta.status >= 400:
             raise RuntimeError(f"HTTP {resposta.status} na categoria {cgid}, posicao {inicio}")
@@ -985,7 +859,6 @@ def rodar(
 
         total_geral = 0
         lojas_concluidas = 0
-        lojas_com_erro = 0
 
         # ----------------------------------------------------
         # Processar cada loja
@@ -993,30 +866,14 @@ def rodar(
 
         for loja in lojas:
 
-            try:
-
-                (
-                    total,
-                    page,
-                    context,
-                    browser,
-                ) = _processar_loja(
-                    page=page,
-                    context=context,
-                    db=db,
-                    loja_nome=loja["nome"],
-                    loja_codigo=loja["codigo"],
-                    categorias=categorias_processar,
-                    playwright=playwright,
-                    browser=browser,
-                )
-
-                total_geral += total
-                lojas_concluidas += 1
-
-            except Exception:
-                # Qualquer coleta incompleta deve falhar, inclusive na matriz do GitHub.
-                raise
+            total, page, context, browser = _processar_loja(
+                page=page, context=context, db=db,
+                loja_nome=loja["nome"], loja_codigo=loja["codigo"],
+                categorias=categorias_processar, playwright=playwright,
+                browser=browser,
+            )
+            total_geral += total
+            lojas_concluidas += 1
 
         # ----------------------------------------------------
         # Resultado final
@@ -1036,13 +893,6 @@ def rodar(
             f"[OK] Lojas concluídas: "
             f"{lojas_concluidas}/{len(lojas)}"
         )
-
-        if lojas_com_erro > 0:
-
-            print(
-                f"[AVISO] Lojas com erro: "
-                f"{lojas_com_erro}"
-            )
 
         print(
             f"[OK] Categorias configuradas: "
@@ -1154,8 +1004,8 @@ def main() -> None:
     {"nome": "Nagumo Poa_Kemel", "codigo": "45"},
 
     # SUZANO
-    {"nome": "Nagumo Suzano", "codigo": "27"},
     {"nome": "Nagumo_Suzano_Dona_Benta", "codigo": "23"},
+    {"nome": "Nagumo Suzano", "codigo": "27"},
 
     # ITAQUAQUECETUBA
     {"nome": "Nagumo Itaqua", "codigo": "30"},
