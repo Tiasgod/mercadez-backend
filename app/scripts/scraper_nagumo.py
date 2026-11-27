@@ -9,7 +9,7 @@ from sqlalchemy import text
 import json
 import re
 import time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from urllib.parse import urlencode, urljoin, urlparse
 
 from playwright.sync_api import (
@@ -144,12 +144,6 @@ def _abrir_nagumo(page: Page) -> None:
 
     verificar_acesso(resposta.status, "pagina inicial", resposta.headers)
 
-    if resposta.status >= 400:
-        raise RuntimeError(
-            f"Nagumo retornou HTTP {resposta.status} "
-            "ao abrir a página inicial."
-        )
-
     print("[OK] Nagumo aberto no navegador.")
 
 
@@ -252,6 +246,16 @@ def _tentar_selecionar_loja(
             "Nagumo não confirmou a seleção."
         )
 
+    # Quando a resposta informa a filial explicitamente, confira o codigo.
+    codigo_retornado = dados.get("storeId")
+    if isinstance(codigo_retornado, (str, int)) and not isinstance(codigo_retornado, bool):
+        informado = str(codigo_retornado).strip()
+        if re.fullmatch(r"(?:M_)?[0-9]+", informado, re.I):
+            if int(informado.split("_")[-1]) != int(loja_codigo):
+                return False, "Codigo de filial retornado diverge do solicitado."
+            print("[INFO] Codigo da filial confirmado pela resposta.")
+    else:
+        print("[INFO] Selecao aceita; resposta sem storeId escalar para verificacao independente.")
     return True, ""
 
 
@@ -349,7 +353,76 @@ def _total_informado(dados):
                 valores.append(valor)
             elif isinstance(valor, str) and valor.isascii() and valor.isdecimal() and len(valor) <= 12:
                 valores.append(int(valor))
-    return valores[0] if valores and len(set(valores)) == 1 else None
+    if len(set(valores)) > 1:
+        raise RuntimeError("Metadados de total divergentes; categoria nao concluida.")
+    return valores[0] if valores else None
+
+
+def _validar_paginacao(produtos, inicio, assinaturas):
+    """Valida antes de gravar; nao altera a assinatura dos checkpoints antigos."""
+    if type(inicio) is not int or inicio < 0:
+        raise RuntimeError("Checkpoint invalido.")
+    if len(produtos) > TAMANHO_PAGINA:
+        raise RuntimeError("Pagina maior que o tamanho solicitado.")
+    assinatura = assinatura_pagina(produtos) if produtos else None
+    if assinatura and assinatura in assinaturas:
+        raise RuntimeError("Pagina repetida; categoria nao concluida.")
+    proxima = inicio + len(produtos)
+    total = getattr(produtos, "total", None)
+    if total is not None:
+        if proxima > total:
+            raise RuntimeError("Total do catalogo inconsistente com a pagina recebida.")
+        if not produtos and inicio < total:
+            raise RuntimeError("Pagina vazia antes do total informado.")
+        concluida = proxima == total
+    else:
+        # Sem total, a pagina curta e o criterio original do endpoint.
+        concluida = len(produtos) < TAMANHO_PAGINA
+    return proxima, assinatura, concluida
+
+
+def _preco_valido(valor):
+    # Numeric(10,2); nao publicar preco zero, negativo, NaN ou fora do campo.
+    try:
+        preco = Decimal(str(valor))
+        if not preco.is_finite() or preco <= 0 or preco > Decimal("99999999.99"):
+            return None
+        preco = preco.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return preco if preco > 0 else None
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
+def _identidade_original(item):
+    for campo in ("productID", "productId", "id", "ean", "upc"):
+        valor = item.get(campo)
+        if isinstance(valor, (str, int)) and not isinstance(valor, bool) and str(valor).strip():
+            return str(valor).strip()
+    return None
+
+
+def _conflitos_pagina(produtos):
+    """Nao confundir variantes homonimas ou precos divergentes na mesma pagina."""
+    vistos = {}
+    conflitos = set()
+    for item in produtos:
+        nome = item.get("productName")
+        if not isinstance(nome, str) or not nome.strip():
+            continue
+        chave = chave_produto(nome)
+        price = item.get("price")
+        sales = price.get("sales") if isinstance(price, dict) else None
+        preco = _preco_valido(sales.get("value")) if isinstance(sales, dict) else None
+        ident = _identidade_original(item)
+        anterior = vistos.get(chave)
+        if anterior is not None:
+            id_ant, preco_ant = anterior
+            if (ident and id_ant and ident != id_ant) or (preco is not None and preco_ant is not None and preco != preco_ant):
+                conflitos.add(chave)
+            vistos[chave] = (id_ant or ident, preco_ant if preco_ant is not None else preco)
+        else:
+            vistos[chave] = (ident, preco)
+    return conflitos
 
 
 def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> PaginaCatalogo:
@@ -364,8 +437,6 @@ def _buscar_pagina(context: BrowserContext, cgid: str, inicio: int) -> PaginaCat
     try:
         print(f"[INFO] Resposta recebida em {time.monotonic() - inicio_http:.2f}s")
         verificar_acesso(resposta.status, f"categoria {cgid}, posicao {inicio}", resposta.headers)
-        if resposta.status != 200:
-            raise FalhaHTTP(resposta.status, f"categoria {cgid}, posicao {inicio}")
         bruto = resposta.text()
         produtos = _extrair_produtos_da_pagina(bruto)
         total = _total_informado(json.loads(bruto))
@@ -525,17 +596,8 @@ def _salvar_produto(
     if preco_raw is None:
         return "ignorado"
 
-    try:
-
-        preco = Decimal(
-            str(preco_raw)
-        )
-
-    except Exception:
-
-        return "ignorado"
-
-    if not preco.is_finite() or preco < 0:
+    preco = _preco_valido(preco_raw)
+    if preco is None:
         return "ignorado"
 
     imagens_urls = _extrair_imagens(produto_nagumo)
@@ -592,7 +654,7 @@ def _salvar_produto(
     if mescladas:
         if produto.imagens_urls != mescladas:
             produto.imagens_urls = mescladas
-        if not principal:
+        if not isinstance(principal, str) or not principal.strip():
             produto.imagem_url = mescladas[0]
 
     # ========================================================
@@ -717,23 +779,20 @@ def _processar_loja(
         while True:
             progresso["posicao"] = inicio
             produtos = _buscar_pagina(context, cgid, inicio)
-            assinatura = assinatura_pagina(produtos) if produtos else None
-            if assinatura and assinatura in assinaturas:
-                raise RuntimeError(f"Pagina repetida em {cgid}, posicao {inicio}; revisar paginacao.")
+            proxima, assinatura, concluida = _validar_paginacao(produtos, inicio, assinaturas)
+            conflitos = _conflitos_pagina(produtos)
             lote = Counter()
+            historicos_lote = set()
             for item in produtos:
-                resultado = _salvar_produto(db, loja, item, produtos_existentes, set(), cgid)
+                nome = item.get("productName")
+                if isinstance(nome, str) and chave_produto(nome) in conflitos:
+                    lote["ignorado_conflito"] += 1
+                    continue
+                resultado = _salvar_produto(db, loja, item, produtos_existentes, historicos_lote, cgid)
                 lote[resultado] += 1
             if assinatura:
                 assinaturas.add(assinatura)
-            proxima = inicio + len(produtos)
-            total = getattr(produtos, "total", None)
-            if total is not None and total < proxima:
-                raise RuntimeError("Total do catalogo inconsistente com a pagina recebida.")
-            if total is not None and not produtos and inicio < total:
-                raise RuntimeError("Pagina vazia antes do total informado.")
-            concluida = (proxima == total if total is not None else
-                         len(produtos) < TAMANHO_PAGINA)
+            print(f"[INFO] Paginacao validada: loja={loja_codigo}, categoria={cgid}, proxima={proxima}, concluida={concluida}")
             # Dados e checkpoint na mesma transacao: ambos gravados ou nenhum.
             salvar_checkpoint(db, loja_codigo, cgid, proxima, assinaturas, concluida)
             db.commit()
