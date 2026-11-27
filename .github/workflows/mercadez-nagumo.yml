@@ -1,0 +1,149 @@
+name: Mercadez - Nagumo V5
+
+on:
+  workflow_dispatch:
+    inputs:
+      operacao:
+        description: "Selecione a operacao"
+        required: true
+        default: "planejar"
+        type: choice
+        options:
+          - planejar
+          - descobrir
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mercadez-nagumo
+  cancel-in-progress: false
+
+jobs:
+
+  nagumo:
+
+    name: Mercadez - Nagumo
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    steps:
+
+      # =====================================================
+      # BAIXAR REPOSITORIO
+      # =====================================================
+
+      - name: Baixar repositorio
+        uses: actions/checkout@v6
+
+      # =====================================================
+      # CONFIGURAR PYTHON
+      # =====================================================
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # =====================================================
+      # INSTALAR DEPENDENCIAS
+      # =====================================================
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install playwright
+
+      # =====================================================
+      # PREPARAR DIAGNOSTICO
+      # =====================================================
+
+      - name: Preparar diagnostico
+        run: |
+          mkdir -p diagnostico
+
+      # =====================================================
+      # DESCOBRIR LOJAS E SUBCATEGORIAS
+      # =====================================================
+
+      - name: Instalar Chromium
+        if: ${{ inputs.operacao == 'descobrir' }}
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: Descobrir catalogo Nagumo
+        if: ${{ inputs.operacao == 'descobrir' }}
+        run: |
+          set -o pipefail
+
+          test -f descobrir_lojas.py
+
+          python -m py_compile descobrir_lojas.py
+
+          python -u descobrir_lojas.py \
+            2>&1 | tee diagnostico/descoberta.log
+
+      # =====================================================
+      # VALIDAR SCRAPER V5
+      # =====================================================
+
+      - name: Validar scraper e catalogo
+        if: ${{ inputs.operacao == 'planejar' }}
+        run: |
+          test -f app/scripts/scraper_nagumo.py
+          test -f catalogo_nagumo.json
+
+          python -m py_compile app/scripts/scraper_nagumo.py
+
+          python -m json.tool catalogo_nagumo.json > /dev/null
+
+          echo "[OK] Scraper validado."
+          echo "[OK] Catalogo validado."
+
+      # =====================================================
+      # PLANEJAR ACOUGUE
+      # =====================================================
+
+      - name: Planejar subcategorias do acougue
+        if: ${{ inputs.operacao == 'planejar' }}
+        run: |
+          set -o pipefail
+
+          python -u -m app.scripts.scraper_nagumo \
+            --planejar \
+            --catalogo catalogo_nagumo.json \
+            --categorias acougue \
+            2>&1 | tee diagnostico/planejamento_acougue.log
+
+      # =====================================================
+      # PLANEJAR CATALOGO COMPLETO
+      # =====================================================
+
+      - name: Planejar catalogo completo
+        if: ${{ inputs.operacao == 'planejar' }}
+        run: |
+          set -o pipefail
+
+          python -u -m app.scripts.scraper_nagumo \
+            --planejar \
+            --catalogo catalogo_nagumo.json \
+            2>&1 | tee diagnostico/planejamento_completo.log
+
+      # =====================================================
+      # SALVAR RESULTADOS
+      # =====================================================
+
+      - name: Salvar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mercadez-nagumo-resultados
+          path: |
+            diagnostico/
+            catalogo_nagumo.json
+            lojas_nagumo_regiao.json
+            relatorio_descoberta.json
+          retention-days: 7
