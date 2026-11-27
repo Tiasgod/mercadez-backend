@@ -2,7 +2,7 @@ name: Mercadez - Atualizacao Regional Nagumo
 
 on:
   schedule:
-    - cron: "15 */6 * * *"
+    - cron: "15 */12 * * *"
 
   workflow_dispatch:
 
@@ -18,13 +18,15 @@ jobs:
 
     name: ${{ matrix.grupo }} - Loja ${{ matrix.codigo }}
 
+    # Habilite somente apos confirmar a autorizacao de coleta.
+    if: ${{ vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 350
 
     strategy:
-      fail-fast: false
-      max-parallel: 2
+      fail-fast: true
+      max-parallel: 1
 
       matrix:
         include:

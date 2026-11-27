@@ -22,12 +22,11 @@ from app.models.produto import Produto
 
 BASE = "https://www.nagumo.com.br"
 
-# Intervalo reduzido para acelerar a coleta.
-# Mantém uma pequena pausa entre as requisições.
-INTERVALO_ENTRE_REQUISICOES_SEGUNDOS = 0.7
+# Intervalo moderado entre páginas do catálogo.
+INTERVALO_ENTRE_REQUISICOES_SEGUNDOS = 3.0
 
 # Pausa entre categorias.
-INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS = 0.7
+INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS = 3.0
 
 # Número de tentativas para selecionar uma loja.
 MAX_TENTATIVAS_SELECAO_LOJA = 3
@@ -39,6 +38,23 @@ TAMANHO_PAGINA = 40
 
 LATITUDE = "-23.5325875"
 LONGITUDE = "-46.335124"
+
+
+class AcessoRecusado(RuntimeError):
+    """Interrompe a coleta sem tentar contornar a recusa do servidor."""
+
+
+def verificar_acesso(status: int, etapa: str) -> None:
+    if status in (403, 429):
+        raise AcessoRecusado(
+            f"HTTP {status} em {etapa}. Coleta suspensa; "
+            "verifique a autorização e os limites com o Nagumo."
+        )
+
+
+def chave_produto(nome: str) -> str:
+    # Não remove acentos, marcas, pesos ou variantes.
+    return " ".join(nome.split()).casefold()
 
 
 # ============================================================
@@ -54,12 +70,7 @@ def _criar_navegador(playwright: Playwright):
     context = browser.new_context(
         locale="pt-BR",
         timezone_id="America/Sao_Paulo",
-        user_agent=(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 "
-            "(KHTML, like Gecko) "
-            "Chrome/152.0.0.0 Safari/537.36"
-        ),
+
         extra_http_headers={
             "Accept-Language": (
                 "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
@@ -87,6 +98,8 @@ def _abrir_nagumo(page: Page) -> None:
             "O Nagumo não retornou resposta ao abrir "
             "a página inicial."
         )
+
+    verificar_acesso(resposta.status, "pagina inicial")
 
     if resposta.status >= 400:
         raise RuntimeError(
@@ -164,6 +177,7 @@ def _tentar_selecionar_loja(
     )
 
     status = resultado["status"]
+    verificar_acesso(status, f"selecao da loja {loja_codigo}")
     texto = resultado["texto"]
 
     if status != 200:
@@ -258,6 +272,8 @@ def _selecionar_loja(
                 f"{loja_codigo}: {erro}"
             )
 
+        except AcessoRecusado:
+            raise
         except Exception as erro:
 
             ultimo_erro = str(erro)
@@ -307,12 +323,7 @@ def _selecionar_loja(
                 context = browser.new_context(
                     locale="pt-BR",
                     timezone_id="America/Sao_Paulo",
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 "
-                        "(KHTML, like Gecko) "
-                        "Chrome/152.0.0.0 Safari/537.36"
-                    ),
+
                     extra_http_headers={
                         "Accept-Language": (
                             "pt-BR,pt;q=0.9,"
@@ -327,6 +338,8 @@ def _selecionar_loja(
 
                     _abrir_nagumo(page)
 
+                except AcessoRecusado:
+                    raise
                 except Exception as erro_abertura:
 
                     print(
@@ -444,6 +457,8 @@ def _buscar_categoria(
             timeout=60000,
         )
 
+        verificar_acesso(resposta.status, f"categoria {cgid}")
+
         if resposta.status >= 400:
 
             raise RuntimeError(
@@ -487,7 +502,7 @@ def _buscar_categoria(
 def _carregar_produtos_da_loja(
     db,
     loja_id: int,
-) -> dict[str, Produto]:
+) -> dict[str, Produto | None]:
 
     print(
         "[INFO] Carregando produtos existentes "
@@ -502,7 +517,7 @@ def _carregar_produtos_da_loja(
         .all()
     )
 
-    mapa: dict[str, Produto] = {}
+    mapa: dict[str, Produto | None] = {}
 
     for produto in produtos:
 
@@ -513,10 +528,18 @@ def _carregar_produtos_da_loja(
         if not nome:
             continue
 
-        mapa[nome] = produto
+        chave = chave_produto(nome)
+        if chave in mapa:
+            mapa[chave] = None
+        else:
+            mapa[chave] = produto
+
+    ambiguos = sum(valor is None for valor in mapa.values())
+    if ambiguos:
+        print(f"[AVISO] {ambiguos} nomes ambiguos; registros preservados sem atualizar automaticamente.")
 
     print(
-        f"[OK] {len(mapa)} produtos existentes "
+        f"[OK] {len(mapa)} chaves de produtos existentes "
         "carregados em memória."
     )
 
@@ -602,7 +625,7 @@ def _salvar_produto(
     db,
     loja: LojaExterna,
     produto_nagumo: dict,
-    produtos_existentes: dict[str, Produto],
+    produtos_existentes: dict[str, Produto | None],
     historicos_criados: set[tuple[int, Decimal]],
     categoria: str | None = None,
 ) -> str:
@@ -636,13 +659,19 @@ def _salvar_produto(
 
         return "ignorado"
 
+    if not preco.is_finite() or preco < 0:
+        return "ignorado"
+
     imagens_urls = _extrair_imagens(produto_nagumo)
 
     # ========================================================
     # PRODUTO NOVO
     # ========================================================
 
-    produto = produtos_existentes.get(nome)
+    chave = chave_produto(nome)
+    if chave in produtos_existentes and produtos_existentes[chave] is None:
+        return "ignorado"
+    produto = produtos_existentes.get(chave)
 
     if produto is None:
 
@@ -668,7 +697,7 @@ def _salvar_produto(
             )
         )
 
-        produtos_existentes[nome] = produto
+        produtos_existentes[chave] = produto
 
         historicos_criados.add(
             (produto.id, preco)
@@ -679,14 +708,16 @@ def _salvar_produto(
     if categoria and not produto.tags:
         produto.tags = categoria
 
-    # Atualiza as fotos mesmo quando o preco nao mudou.
-    # Se a coleta atual nao trouxer imagens, preservamos as anteriores.
-    if imagens_urls:
-        mescladas = list(dict.fromkeys((produto.imagens_urls or []) + imagens_urls))
+    # Preserve URLs principais válidas; repare concatenações e preencha lacunas.
+    principal = normalizar_url_imagem(produto.imagem_url)
+    antigas = produto.imagens_urls if isinstance(produto.imagens_urls, list) else []
+    mescladas = list(dict.fromkeys(url for valor in [principal, *antigas, *imagens_urls]
+                                  if (url := normalizar_url_imagem(valor))))
+    if mescladas:
         if produto.imagens_urls != mescladas:
             produto.imagens_urls = mescladas
-        if not produto.imagem_url:
-            produto.imagem_url = mescladas[0]
+        if produto.imagem_url != (principal or mescladas[0]):
+            produto.imagem_url = principal or mescladas[0]
 
     # ========================================================
     # PREÇO IGUAL
@@ -841,6 +872,8 @@ def _processar_loja(
                 cgid=cgid,
             )
 
+        except AcessoRecusado:
+            raise
         except Exception as erro:
 
             print(
@@ -928,6 +961,8 @@ def _processar_loja(
 
             db.commit()
 
+        except AcessoRecusado:
+            raise
         except Exception as erro:
 
             db.rollback()
@@ -1135,6 +1170,8 @@ def rodar(
                 total_geral += total
                 lojas_concluidas += 1
 
+            except AcessoRecusado:
+                raise
             except Exception as erro:
 
                 lojas_com_erro += 1
@@ -1173,12 +1210,7 @@ def rodar(
                 context = browser.new_context(
                     locale="pt-BR",
                     timezone_id="America/Sao_Paulo",
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 "
-                        "(KHTML, like Gecko) "
-                        "Chrome/152.0.0.0 Safari/537.36"
-                    ),
+
                     extra_http_headers={
                         "Accept-Language": (
                             "pt-BR,pt;q=0.9,"
@@ -1193,6 +1225,8 @@ def rodar(
 
                     _abrir_nagumo(page)
 
+                except AcessoRecusado:
+                    raise
                 except Exception as erro:
 
                     print(
@@ -1404,5 +1438,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except AcessoRecusado as erro:
+        print(f"[ERRO] {erro}", flush=True)
+        raise SystemExit(1)
 
