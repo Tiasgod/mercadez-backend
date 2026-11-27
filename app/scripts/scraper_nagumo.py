@@ -5,24 +5,12 @@ from pathlib import Path
 import hashlib
 from datetime import datetime, timezone
 from collections import Counter
-from sqlalchemy import text
 import json
 import re
 import time
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from urllib.parse import urlencode, urljoin, urlparse
 
-from playwright.sync_api import (
-    BrowserContext,
-    Page,
-    Playwright,
-    sync_playwright,
-)
-
-from app.core.database import SessionLocal
-from app.models.historico_preco import HistoricoPreco
-from app.models.loja_externa import LojaExterna
-from app.models.produto import Produto
 
 
 BASE = "https://www.nagumo.com.br"
@@ -37,6 +25,65 @@ TAMANHO_PAGINA = 40
 
 LATITUDE = "-23.5325875"
 LONGITUDE = "-46.335124"
+
+
+
+def carregar_catalogo(arquivo):
+    dados = json.loads(Path(arquivo).read_text(encoding="utf-8"))
+    mapa = {}
+    for item in dados["categorias"]:
+        partes = item["hierarquia"]
+        if not partes or not all(re.fullmatch(r"[a-z0-9-]+", p) for p in partes):
+            raise ValueError("Hierarquia invalida")
+        chave = "/".join(partes)
+        if chave in mapa:
+            raise ValueError(f"Categoria duplicada: {chave}")
+        mapa[chave] = item
+    return mapa
+
+
+def planejar_catalogo(mapa, departamentos=None):
+    filtro = set(departamentos or [])
+    selecionados = {k:v for k,v in mapa.items() if not filtro or k.split("/")[0] in filtro}
+    if filtro - {k.split("/")[0] for k in selecionados}:
+        raise ValueError("Departamento solicitado ausente do catalogo")
+    folhas = [k for k in sorted(selecionados) if not any(x.startswith(k+"/") for x in selecionados)]
+    return {"escopo": "planejamento, sem acesso ao site ou banco", "cobertura_confirmada": False,
+            "categorias_observadas": len(selecionados), "folhas_candidatas": folhas,
+            "identificadores_validados": sum(v.get("codigo_validado_em_api") is True and bool(v.get("codigo_confirmado")) for v in selecionados.values()),
+            "departamentos_ausentes": sorted(set(DEPARTAMENTOS_ESPERADOS)-{k.split("/")[0] for k in mapa})}
+
+
+DEPARTAMENTOS_ESPERADOS = "acougue basicos-e-matinais bazar bebidas frios-e-laticinios higiene-e-perfumaria hortifruti limpeza padaria peixaria pet-shop mercearia-doce mercearia-salgada".split()
+
+
+def carregar_consultas_autorizadas(arquivo, mapa, lojas, departamentos):
+    dados = json.loads(Path(arquivo).read_text(encoding="utf-8"))
+    if not isinstance(dados.get("referencia_autorizacao"), str) or not dados["referencia_autorizacao"].strip():
+        raise ValueError("Informe a referencia da autorizacao de coleta e dos limites de pesquisa")
+    resultado = {}
+    for loja in lojas:
+        codigo = loja["codigo"]
+        consultas = dados.get("filiais", {}).get(codigo, [])
+        selecionadas = {}
+        ids = set()
+        for item in consultas:
+            caminho = item["hierarquia"]
+            if departamentos and caminho.split("/")[0] not in departamentos:
+                continue
+            if caminho not in mapa or item.get("validado") is not True or not str(item.get("evidencia") or "").strip():
+                raise ValueError(f"Consulta nao validada: {codigo}/{caminho}")
+            cgid = item.get("cgid")
+            if not isinstance(cgid, str) or not cgid.strip():
+                raise ValueError("Identificador interno ausente")
+            if cgid in ids or caminho in selecionadas:
+                raise ValueError("Consulta duplicada")
+            ids.add(cgid)
+            selecionadas[caminho] = cgid
+        if not selecionadas:
+            raise ValueError(f"Nenhuma consulta validada para filial {codigo}")
+        resultado[codigo] = selecionadas
+    return resultado
 
 
 class AcessoRecusado(RuntimeError):
@@ -696,6 +743,7 @@ def _processar_loja(
     browser,
     contagem: Counter,
     progresso: dict,
+    consultas: dict | None = None,
 ) -> None:
 
     print()
@@ -768,9 +816,13 @@ def _processar_loja(
     )
 
     db.commit()
-    for cgid in categorias:
-        progresso.update(categoria=cgid, posicao=None)
-        inicio, assinaturas, concluida = ler_checkpoint(db, loja_codigo, cgid)
+    unidades = consultas if consultas is not None else {c:c for c in categorias}
+    chaves = {}
+    for caminho, cgid in unidades.items():
+        chave = ("v5:" + hashlib.sha256(json.dumps([caminho,cgid], ensure_ascii=False).encode()).hexdigest()) if consultas is not None else cgid
+        chaves[caminho] = chave
+        progresso.update(categoria=caminho, posicao=None)
+        inicio, assinaturas, concluida = ler_checkpoint(db, loja_codigo, chave)
         db.commit()
         progresso["posicao"] = inicio
         if concluida:
@@ -788,13 +840,13 @@ def _processar_loja(
                 if isinstance(nome, str) and chave_produto(nome) in conflitos:
                     lote["ignorado_conflito"] += 1
                     continue
-                resultado = _salvar_produto(db, loja, item, produtos_existentes, historicos_lote, cgid)
+                resultado = _salvar_produto(db, loja, item, produtos_existentes, historicos_lote, caminho.split("/")[0])
                 lote[resultado] += 1
             if assinatura:
                 assinaturas.add(assinatura)
             print(f"[INFO] Paginacao validada: loja={loja_codigo}, categoria={cgid}, proxima={proxima}, concluida={concluida}")
             # Dados e checkpoint na mesma transacao: ambos gravados ou nenhum.
-            salvar_checkpoint(db, loja_codigo, cgid, proxima, assinaturas, concluida)
+            salvar_checkpoint(db, loja_codigo, chave, proxima, assinaturas, concluida)
             db.commit()
             contagem.update(lote)
             progresso["posicao"] = proxima
@@ -805,7 +857,7 @@ def _processar_loja(
             time.sleep(INTERVALO_ENTRE_REQUISICOES_SEGUNDOS)
         time.sleep(INTERVALO_ENTRE_CATEGORIAS_SEGUNDOS)
     # Somente quando todas as categorias solicitadas terminam: novo ciclo na proxima execucao.
-    for cgid in categorias:
+    for cgid in chaves.values():
         db.execute(text("DELETE FROM nagumo_coleta_checkpoint WHERE loja_codigo=:codigo AND categoria=:categoria"),
                    {"codigo": loja_codigo, "categoria": cgid})
     db.commit()
@@ -818,7 +870,14 @@ def _processar_loja(
 # ============================================================
 
 def rodar(lojas: list[dict], categorias: list[str] | None = None,
-          todos: bool = False) -> int:
+          todos: bool = False, consultas_por_filial=None) -> int:
+    global text, sync_playwright, SessionLocal, HistoricoPreco, LojaExterna, Produto
+    from sqlalchemy import text
+    from playwright.sync_api import sync_playwright
+    from app.core.database import SessionLocal
+    from app.models.historico_preco import HistoricoPreco
+    from app.models.loja_externa import LojaExterna
+    from app.models.produto import Produto
     inicio = time.monotonic()
     contagem = Counter()
     resultados, erros = [], []
@@ -842,7 +901,7 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
                 page = context.new_page()
                 _abrir_nagumo(page)
                 categorias_processar = _descobrir_departamentos(page) if todos else list(dict.fromkeys(categorias or []))
-                if not categorias_processar:
+                if not categorias_processar and consultas_por_filial is None:
                     raise ValueError("Nenhuma categoria selecionada.")
                 for loja in lojas:
                     print(f"[INFO] Loja em processamento: {loja['nome']} (codigo {loja['codigo']})", flush=True)
@@ -854,8 +913,9 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
                         db = SessionLocal()
                         db.expire_on_commit = False
                         _processar_loja(page, context, db, loja["nome"], loja["codigo"],
-                                        categorias_processar, playwright, browser, contagem, progresso)
-                        status = "concluida"
+                                        categorias_processar, playwright, browser, contagem, progresso,
+                                        consultas=(consultas_por_filial or {}).get(loja["codigo"]))
+                        status = "consultas_concluidas" if consultas_por_filial is not None else "concluida"
                     except Exception as erro:
                         registrar_erro(erro, loja, progresso)
                         parar = isinstance(erro, AcessoRecusado)
@@ -883,8 +943,8 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
     finally:
         processadas = {r["codigo"] for r in resultados}
         pendentes = [l for l in lojas if l["codigo"] not in processadas]
-        concluidas = sum(r["status"] == "concluida" for r in resultados)
-        relatorio = {"lojas_programadas": len(lojas), "lojas_processadas": len(resultados),
+        concluidas = sum(r["status"] in ("concluida", "consultas_concluidas") for r in resultados)
+        relatorio = {"escopo": "consultas autorizadas, cobertura integral nao comprovada" if consultas_por_filial is not None else "departamentos originais", "lojas_programadas": len(lojas), "lojas_processadas": len(resultados),
                      "lojas_concluidas": concluidas, "lojas_com_falhas": len(resultados)-concluidas,
                      "lojas_nao_processadas": len(pendentes), "pendentes": pendentes,
                      "produtos_analisados": sum(contagem.values()), "produtos": dict(contagem),
@@ -949,7 +1009,16 @@ def main() -> int:
         ),
     )
 
+    parser.add_argument("--planejar", action="store_true", help="Planejamento offline")
+    parser.add_argument("--catalogo", default="catalogo_nagumo.json")
+    parser.add_argument("--consultas-autorizadas", help="JSON de consultas validadas por filial")
     args = parser.parse_args()
+    if args.planejar:
+        plano = planejar_catalogo(carregar_catalogo(args.catalogo), args.categorias)
+        Path("diagnostico").mkdir(exist_ok=True)
+        Path("diagnostico/plano_catalogo.json").write_text(json.dumps(plano, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps(plano, ensure_ascii=False, indent=2))
+        return 0
 
     # --------------------------------------------------------
     # Lojas padrão do Mercadez
@@ -1021,7 +1090,11 @@ def main() -> int:
     # Executar
     # --------------------------------------------------------
 
+    consultas = None
+    if args.consultas_autorizadas:
+        consultas = carregar_consultas_autorizadas(args.consultas_autorizadas, carregar_catalogo(args.catalogo), lojas, args.categorias)
     return rodar(
+        consultas_por_filial=consultas,
         lojas=lojas,
         categorias=args.categorias,
         todos=args.todos,
