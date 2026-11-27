@@ -1,1 +1,126 @@
+name: Mercadez - Nagumo Automatico V2
 
+on:
+  schedule:
+    - cron: "44 1,13 * * *"
+
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+
+concurrency:
+  group: mercadez-scraper-imagens
+  cancel-in-progress: false
+
+jobs:
+
+  verificar-agendamento:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Confirmar disparo
+        run: |
+          echo "Workflow iniciado com sucesso"
+          echo "Evento: ${{ github.event_name }}"
+          TZ=America/Sao_Paulo date
+
+  atualizar-catalogo:
+
+    needs: verificar-agendamento
+
+    if: ${{ vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
+
+    name: Nagumo - Loja ${{ matrix.codigo }}
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 350
+
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+
+      matrix:
+        include:
+
+          - nome: "Nagumo Poa"
+            codigo: "22"
+
+          - nome: "Nagumo Poa_Kemel"
+            codigo: "45"
+
+          - nome: "Nagumo_Suzano_Dona_Benta"
+            codigo: "23"
+
+          - nome: "Nagumo Suzano"
+            codigo: "27"
+
+          - nome: "Nagumo Itaqua"
+            codigo: "30"
+
+          - nome: "Nagumo_Itaqua_Vila_Zeferina"
+            codigo: "39"
+
+          - nome: "Nagumo_Mogi_Alto_Ipiranga"
+            codigo: "52"
+
+          - nome: "Nagumo_Guarulhos_Merc_Bonsucesso"
+            codigo: "41"
+
+          - nome: "Nagumo_Guarulhos_Cumbica"
+            codigo: "42"
+
+          - nome: "Nagumo_Guarulhos_Shopping_Pimentas"
+            codigo: "49"
+
+          - nome: "Nagumo_Guarulhos_Continental"
+            codigo: "51"
+
+          - nome: "Nagumo_Guarulhos_Bonsucesso"
+            codigo: "55"
+
+          - nome: "Nagumo_Guarulhos_Elenco"
+            codigo: "56"
+
+          - nome: "Nagumo_Guarulhos_Anel_Viario"
+            codigo: "57"
+
+          - nome: "Nagumo_Guarulhos_Alvorada"
+            codigo: "61"
+
+    steps:
+
+      - name: Baixar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install playwright
+
+      - name: Instalar Chromium
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: Atualizar precos e imagens
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONUNBUFFERED: "1"
+          LOJA_NOME: ${{ matrix.nome }}
+          LOJA_CODIGO: ${{ matrix.codigo }}
+
+        shell: bash
+
+        run: |
+          python -m app.scripts.scraper_nagumo \
+            --loja "$LOJA_NOME" \
+            --loja-codigo "$LOJA_CODIGO" \
+            --todos
