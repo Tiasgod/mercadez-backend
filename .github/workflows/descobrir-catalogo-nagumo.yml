@@ -24,6 +24,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verificar arquivo Python
+        run: |
+          ls -la
+          test -f descobrir_lojas.py
+          python -m py_compile descobrir_lojas.py
+
       - name: Instalar Playwright
         run: |
           python -m pip install --upgrade pip
@@ -33,7 +39,7 @@ jobs:
       - name: Descobrir lojas e categorias
         run: |
           set -o pipefail
-          python -u -m app.scripts.descobrir_lojas 2>&1 | tee descoberta.log
+          python -u descobrir_lojas.py 2>&1 | tee descoberta.log
 
       - name: Salvar arquivos de descoberta
         if: always()
