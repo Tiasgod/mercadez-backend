@@ -1,10 +1,3 @@
-
-Configuracao central da aplicacao.
-
-Todos os valores sensiveis (chave secreta, URL do banco) vem de
-variaveis de ambiente / arquivo .env — nunca ficam hardcoded no codigo.
-
-
 import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
