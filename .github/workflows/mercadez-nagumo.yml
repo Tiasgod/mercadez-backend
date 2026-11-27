@@ -1,6 +1,9 @@
 name: Mercadez - Nagumo V5
 
 on:
+  schedule:
+    - cron: "0 11,23 * * *"
+
   workflow_dispatch:
 
 permissions:
@@ -14,7 +17,9 @@ jobs:
 
   coletar:
 
-    name: Nagumo Poa - Coleta por Subcategorias
+    name: Atualizacao Regional - 15 Nagumos
+
+    if: ${{ vars.NAGUMO_COLETA_AUTORIZADA == 'true' }}
 
     runs-on: ubuntu-latest
 
@@ -82,10 +87,10 @@ jobs:
           mkdir -p diagnostico
 
       # =====================================================
-      # COLETA REAL
+      # COLETA REAL - TODAS AS 15 LOJAS
       # =====================================================
 
-      - name: Coletar produtos e atualizar precos
+      - name: Atualizar produtos precos e imagens
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONUNBUFFERED: "1"
@@ -96,10 +101,19 @@ jobs:
           set -o pipefail
 
           python -u -m app.scripts.scraper_nagumo \
-            --loja "Nagumo Poa" \
-            --loja-codigo "22" \
+            --todas-lojas \
             --catalogo catalogo_nagumo.json \
-            --categorias acougue \
+            --categorias \
+              acougue \
+              basicos-e-matinais \
+              bazar \
+              bebidas \
+              frios-e-laticinios \
+              hortifruti \
+              limpeza \
+              padaria \
+              peixaria \
+              pet-shop \
             2>&1 | tee diagnostico/coleta.log
 
       # =====================================================
