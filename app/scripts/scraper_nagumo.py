@@ -958,6 +958,82 @@ def rodar(lojas: list[dict], categorias: list[str] | None = None,
     return 1 if erros or len(resultados) != len(lojas) else 0
 
 
+# Subcategorias observadas no catalogo; slugs ainda nao validados como cgid.
+ACOUGUE_CANDIDATOS = (
+    "ave/ave-congelada", "ave/ave-refrigerada", "ave/iqf",
+    "bovino/bovino-congelado", "bovino/bovino-manipulado", "bovino/bovino-vacuo",
+    "caprino/caprino-e-cordeiro", "defumado-e-charqueado/carne-seca",
+    "defumado-e-charqueado/suino-defumado", "suino/suino-congelado",
+    "suino/suino-refrigerado",
+)
+
+
+def testar_segmentado(arquivo):
+    """Exercita o coletor com respostas simuladas; sem rede ou banco."""
+    from urllib.parse import parse_qs
+    mapa = carregar_catalogo(arquivo)
+    caminhos = ["acougue/" + p for p in ACOUGUE_CANDIDATOS]
+    if set(caminhos) != set(planejar_catalogo(mapa, ["acougue"])["folhas_candidatas"]):
+        raise RuntimeError("Catalogo diverge das subcategorias esperadas")
+    class Resposta:
+        headers = {"content-type": "application/json"}
+        def __init__(self, dados, status=200):
+            self.dados, self.status = dados, status
+        def text(self):
+            return json.dumps(self.dados)
+        def dispose(self):
+            pass
+    class Simulador:
+        def __init__(self):
+            self.request = self
+            self.status = 200
+        def get(self, url, **kwargs):
+            q = parse_qs(urlparse(url).query)
+            inicio, tamanho = int(q["start"][0]), int(q["sz"][0])
+            cgid = q["cgid"][0]
+            if self.status != 200:
+                return Resposta({}, self.status)
+            itens = [{"productID": f"{cgid}-{i}", "productName": f"Simulado {i}",
+                      "price": {"sales": {"value": 10.0}}}
+                     for i in range(inicio, min(inicio+tamanho, 45))]
+            return Resposta({"productsSearchResult": itens, "total": 45})
+    contexto = Simulador()
+    resultados = []
+    for caminho in caminhos:
+        candidato = caminho.rsplit("/", 1)[1]
+        pagina = _buscar_pagina(contexto, candidato, 0)
+        pos, assinatura, fim = _validar_paginacao(pagina, 0, set())
+        if (pos, fim) != (40, False):
+            raise RuntimeError("Primeira pagina invalida")
+        segunda = _buscar_pagina(contexto, candidato, pos)
+        final, _, fim = _validar_paginacao(segunda, pos, {assinatura})
+        if (final, fim) != (45, True):
+            raise RuntimeError("Segunda pagina invalida")
+        try:
+            _validar_paginacao(pagina, 0, {assinatura})
+        except RuntimeError:
+            pass
+        else:
+            raise RuntimeError("Pagina repetida nao detectada")
+        resultados.append({"hierarquia": caminho, "cgid_candidato": candidato,
+                           "produtos_simulados": final, "paginas": 2})
+    contexto.status = 403
+    try:
+        _buscar_pagina(contexto, "simulado", 0)
+    except AcessoRecusado:
+        pass
+    else:
+        raise RuntimeError("HTTP 403 simulado nao interrompeu a consulta")
+    relatorio = {"escopo": "teste offline simulado", "loja_referencia": "22",
+                 "subcategorias": resultados, "teste_http_403": "aprovado",
+                 "teste_pagina_repetida": "aprovado", "identificadores_validados": 0,
+                 "rede_utilizada": False, "banco_utilizado": False}
+    Path("diagnostico").mkdir(exist_ok=True)
+    Path("diagnostico/teste_segmentado.json").write_text(json.dumps(relatorio, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(relatorio, ensure_ascii=False, indent=2))
+    return 0
+
+
 def main() -> int:
 
     parser = argparse.ArgumentParser(
@@ -1012,7 +1088,10 @@ def main() -> int:
     parser.add_argument("--planejar", action="store_true", help="Planejamento offline")
     parser.add_argument("--catalogo", default="catalogo_nagumo.json")
     parser.add_argument("--consultas-autorizadas", help="JSON de consultas validadas por filial")
+    parser.add_argument("--testar-segmentado", action="store_true")
     args = parser.parse_args()
+    if args.testar_segmentado:
+        return testar_segmentado(args.catalogo)
     if args.planejar:
         plano = planejar_catalogo(carregar_catalogo(args.catalogo), args.categorias)
         Path("diagnostico").mkdir(exist_ok=True)
@@ -1090,6 +1169,8 @@ def main() -> int:
     # Executar
     # --------------------------------------------------------
 
+    if not args.consultas_autorizadas:
+        parser.error("Coleta antiga suspensa; use --testar-segmentado ou forneca consultas autorizadas e validadas.")
     consultas = None
     if args.consultas_autorizadas:
         consultas = carregar_consultas_autorizadas(args.consultas_autorizadas, carregar_catalogo(args.catalogo), lojas, args.categorias)
