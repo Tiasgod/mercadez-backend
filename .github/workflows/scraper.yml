@@ -2,8 +2,7 @@ name: Mercadez - Atualizacao Regional Nagumo
 
 on:
   schedule:
-    - cron: "15 */12 * * *"
-
+    - cron: "47 0,12 * * *"
   workflow_dispatch:
 
 permissions:
